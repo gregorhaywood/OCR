@@ -6,8 +6,8 @@ from html.parser import HTMLParser
 from xml.etree import cElementTree as etree
 import urllib.request as urllib2
 
-from fileutil import *
-from stringutil import *
+from fileutil import ocr_bin_page_image, ocr_hocr_file, ocr_line_image_files
+from fileutil import ocr_trans_line_aut, extract_hex, ocr_trans_line_gold, ocr_trans_file_boxed
 
 page = 1
 

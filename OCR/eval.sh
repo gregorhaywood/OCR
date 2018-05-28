@@ -2,8 +2,8 @@
 
 source settings.sh
 
-FIRST=1
-LAST=6
+#FIRST=1
+#LAST=6
 
 GTLINES=()
 for ((i=$FIRST; i<=$LAST; i++))
@@ -25,7 +25,7 @@ TOTALDIFF=0
 for i in ${!GTLINES[@]}; do
 	DIFF=$(lev.py "${GTLINES[i]}" "${LINES[i]}")
 	TOTALDIFF=$(($TOTALDIFF+$DIFF))
-done 
+done
 
 TOTALSIZE=0
 for i in ${!GTLINES[@]}; do

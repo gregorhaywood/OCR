@@ -6,8 +6,8 @@ from os.path import isfile, join
 from re import match
 import regex
 
-from fileutil import *
-from stringutil import *
+from fileutil import ocr_trans_new_files, ocr_trans_file, ocr_trans_file_new
+from stringutil import hexs_to_chars
 
 # Globally in one page substitute one grapheme for another.
 # E.g. subs 4 0070+0303 0404
@@ -47,4 +47,3 @@ if s_old != '' and s_new != '':
 			with open(f_new, 'w') as f:
 				for line in lines:
 					f.write(line.replace(s_old, s_new))
-

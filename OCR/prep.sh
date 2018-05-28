@@ -2,8 +2,8 @@
 
 source settings.sh
 
-FIRST=1
-LAST=1
+#FIRST=1
+#LAST=1
 
 # binarize
 for ((i=$FIRST; i<=$LAST; i++))
@@ -26,6 +26,5 @@ done
 # split transcriptions
 for ((i=$FIRST; i<=$LAST; i++))
 do
-	septrans.py $i
+	./septrans.py $i
 done
-

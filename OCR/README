@@ -2,12 +2,12 @@ In fileutil.py and settings.sh the path of the data is set, say $DATA.
 
 $DATA/scans
 
-contains: 
+contains:
 * [files of form:] scan_123.tif
 * [files of form:] exclude_123.txt
 
 Files of form exclude_123.txt contain lines of form 010003.bin.png,
-corresponding to lines automatically extracted from the scan that need 
+corresponding to lines automatically extracted from the scan that need
 to be ignored.
 
 $DATA/trans
@@ -23,14 +23,14 @@ contains:
 * names.txt
 
 The file ordinaries.txt is maintained by hand. It contains ordinary
-characters, which correspond to a single key on a normal keyboard. 
+characters, which correspond to a single key on a normal keyboard.
 The file all.txt may be overwritten automatically, as extracted
 from the transcriptions. The file named.txt is a human readable
 version, with names of glyphs.
 
 $DATA/bin
 
-contains reproducible files.
+contains reproducible files. Must be initialised to contain the directory structure.
 
 $DATA/models
 

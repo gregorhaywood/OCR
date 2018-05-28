@@ -4,7 +4,7 @@ from re import match, sub
 
 # Paths and filenames.
 
-ocr_data_dir = '/home/mjn/Data/FrenchBible'
+ocr_data_dir = '../Data/FrenchBible'
 
 ### Auxiliary
 

@@ -2,14 +2,14 @@
 
 source settings.sh
 
-FIRST=1
-LAST=6
+#FIRST=1
+#LAST=6
 
-# MODEL=model-00001000.pyrnn.gz
+#MODEL=model-00001000.pyrnn.gz
 # MODEL=model-00002000.pyrnn.gz
 # MODEL=model-00003000.pyrnn.gz
 # MODEL=model-00004000.pyrnn.gz
-MODEL=model-00005000.pyrnn.gz
+#MODEL=model-00005000.pyrnn.gz
 
 LINES=()
 for ((i=$FIRST; i<=$LAST; i++))

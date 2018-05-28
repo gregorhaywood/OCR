@@ -6,11 +6,11 @@ from re import match, sub
 import unicodedata
 
 from tkinter import *
-from PIL import ImageTk, Image
+from PIL import Image, ImageTk
 from PIL.ImageTk import PhotoImage
 
-from fileutil import *
-from stringutil import *
+from fileutil import ocr_excl, ocr_line_image_files, extract_hex
+from fileutil import ocr_bin_dir, ocr_excl_file, hex_sorted
 
 # Select lines.
 

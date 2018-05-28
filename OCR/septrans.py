@@ -3,7 +3,7 @@
 import sys
 from os.path import isfile
 
-from fileutil import *
+from fileutil import ocr_trans_file, expand_hex, ocr_trans_line_gold
 
 # Split up file with transcriptions into separate lines.
 # If the file doesn't exist, make file with empty lines.

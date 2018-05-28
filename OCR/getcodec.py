@@ -8,8 +8,8 @@ from re import match
 import regex
 import unicodedata
 
-from fileutil import *
-from stringutil import *
+from fileutil import ocr_trans_files, ocr_codec_all, ocr_codec_names
+from stringutil import files_to_grapheme_set, chars_to_hexs, chars_to_names
 
 cs = sorted(files_to_grapheme_set(ocr_trans_files()))
 
@@ -19,4 +19,3 @@ with open(ocr_codec_all(), 'w') as f:
 with open(ocr_codec_names(), 'w') as f:
 	for c in cs:
 		f.write(c + '\t' + chars_to_hexs(c) + '\t' + chars_to_names(c) + '\n')
-

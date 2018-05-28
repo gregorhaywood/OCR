@@ -1,4 +1,4 @@
-#!/usr/bin/python3 
+#!/usr/bin/python3
 
 from os import listdir
 from os.path import isfile, join
@@ -9,8 +9,9 @@ from tkinter import *
 from PIL import ImageTk, Image
 from PIL.ImageTk import PhotoImage
 
-from fileutil import *
-from stringutil import *
+from fileutil import ocr_line_image_files, ocr_excl, extract_hex, ocr_bin_dir
+from fileutil import ocr_trans_line_aut, ocr_trans_line_gold, ocr_trans_file, ocr_codec_all, ocr_codec_ordinaries
+from stringutil import file_to_grapheme_set, chars_to_names
 
 # Edit transcriptions of images, each of one line.
 

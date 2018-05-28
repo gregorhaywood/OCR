@@ -4,7 +4,7 @@
 
 import sys
 
-from stringutil import *
+from stringutil import levenshtein
 
 s1 = ''
 s2 = ''
