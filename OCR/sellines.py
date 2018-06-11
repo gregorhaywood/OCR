@@ -6,6 +6,7 @@ from re import match, sub
 import unicodedata
 
 from tkinter import *
+
 from PIL import Image, ImageTk
 from PIL.ImageTk import PhotoImage
 

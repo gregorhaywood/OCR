@@ -1,19 +1,42 @@
 #!/bin/bash
 
+python getcodec.py
+
 source settings.sh
 
 #FIRST=1
 #LAST=1
 
-python getcodec.py
-
 LINES=()
 for ((i=$FIRST; i<=$LAST; i++))
 do
 	I=$(printf '%04d\n' $i)
-	MORELINES=($DATA/bin/$I/0001/*.png)
-	LINES=("${LINES[@]}" "${MORELINES[@]}")
+
+  # get all files
+	PAGE_LINES=($DATA/bin/$I/0001/*.png)
+
+  # get files to exclude
+  EXCL_LINES=()
+  for EXCL in $(cat $DATA/scans/excl_0001.txt);
+  do
+    L=$DATA/bin/$I/0001/$EXCL.bin.png
+  	EXCL_LINES=("${EXCL_LINES[@]}" "${L}")
+  done
+
+  # remove excluded files
+  FINAL=()
+  for L in ${PAGE_LINES[@]};
+  do
+    if [ "$L" = "$EXCL_LINES" ];
+    then
+      EXCL_LINES=("${EXCL_LINES[@]:1}")
+    else
+      FINAL=("${FINAL[@]}" $L)
+    fi
+  done
+
+	LINES=("${LINES[@]}" "${FINAL[@]}")
 done
-# ocropus-rtrain -load oldmodel -c $CODEC -o $NEW_MODEL $DATA/bin/1/0001/*.png
-# ocropus-rtrain -d 1 -c $DATA/codec.txt -N $N -o mymodel $DATA/bin/1/0001/*.png
+
+
 ocropus-rtrain -c $DATA/codecs/all.txt -N $NTRAIN -F $FTRAIN -o $DATA/models/model "${LINES[@]}"

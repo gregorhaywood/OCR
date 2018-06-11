@@ -1,5 +1,6 @@
 #!/bin/bash
 
+source ./ocropy/ocropus_venv/bin/activate
 # Directory of data.
 DATA=../Data/FrenchBible
 
