@@ -27,7 +27,7 @@ class Model(object):
     def _createModel(self):
         """Create an untrained model."""
         package, _ = os.path.split(__file__)
-        file = open(package + "/Data/codec.csv", "r")
+        file = open(package + "/data/codec.csv", "r")
         self.codec = {}
         for line in csv.reader(file, escapechar="\\"):
             c = line[0]
@@ -60,23 +60,23 @@ class Model(object):
         """Forwards probability calculator."""
         # it is not possible to reach state x without
         # x transitions, so state<=col
-        if state>col: return 0.0
+        if state>col: return None, 0.0
 
         # base case
         if col==0 and state<=0:
-            return self.stateList[0].emission(self.img[col])
+            return self.stateList[0].mu, self.stateList[0].emission(self.img[col])
 
         if state<0:
             state = 0
 
         # probability previous col was different state times that state's
         # transition probability
-        change = self.forwards(state-1,col-1)*self.stateList[state-1].trans
+        change = self.forwards(state-1,col-1)[1]*self.stateList[state-1].trans
         # probability previous col was same state times this state's (ie,
         # the stateof both columns) non-transition probability
-        same = self.forwards(state,col-1)*(1-self.stateList[state-1].trans)
+        same = self.forwards(state,col-1)[1]*(1-self.stateList[state-1].trans)
         emit = self.stateList[state].emission(self.img[col])
-        return (change+same)*emit
+        return self.stateList[state].mu, (change+same)*emit
 
 
     def backwards(self, state, col):

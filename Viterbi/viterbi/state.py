@@ -16,7 +16,7 @@ class State(object):
         self.name = name
         self.next = nextState
         self.trans = trans
-        self.sigma = 1
+        self.sigma = 5 # 0.4
         self.mu = mu
 
     def emission(self, x):
@@ -57,7 +57,7 @@ class State(object):
                 states.append(self.char+str(self.name))
             else:
                 return states + self.next.fit(line)
-        print(self)
+        # print(self)
         return states
 """
 Each state should have a transition probability,
