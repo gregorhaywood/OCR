@@ -3,6 +3,8 @@ import numpy as np
 from hmmlearn import hmm
 from viterbi.char import Char
 from viterbi.model import Model
+from functools import reduce
+
 
 
 
@@ -91,8 +93,10 @@ def myModel(fname):
     counts = list(map(lambda x: len(img)-x.sum(), img.transpose()))
     start = 0
     while (counts[start] == 0): start = start + 1
+    end = len(counts)
+    while (counts[end-1] == 0): end = end - 1
     m = Model( "c", "Data/codec")
-    results = m.fit("ie vous mon⌠treray le⌠pou⌠e la femme a laignel, & me mena en", counts[start:])
+    results = m.fit("ie vous mon⌠treray le⌠pou⌠e la femme a laignel, & me mena en", counts[start:end])
 
     def c(col):
         if results[col][0] ==  " ":
@@ -132,6 +136,21 @@ def myModel(fname):
             output[i][-3] = black
             output[i][-4] = black
 
+    # mark mean
+    """
+    trans = img.transpose()
+    m = len(img)/2
+    for col in range(len(output)):
+        bl = []
+        for i in range(len(trans[col])):
+            if isChar(trans[col][i]):
+                bl.append(i)
+        m2 = m
+        if len(bl)>0:
+            m2 = reduce(lambda x,y: x+y, bl)/len(bl)
+        m = (30*m+m2+len(img)/2)/32
+        output[col][int(m)] = red
+    """
     imsave("Data/model.png", np.array(output).transpose(1,0,2), format="png")
 
 def testProb(fname, startState=0, startCol=0):
@@ -154,24 +173,61 @@ fname = "Data/img.png"
 # makeHeatMap(fname)
 # runHMM(fname)
 # testProb(fname,2,6)
-myModel(fname)
+# myModel(fname)
+
+print("Functions done")
 
 img = np.array(imread(fname))
 counts = list(map(lambda x: len(img)-x.sum(), img.transpose()))
 start = 0
 while (counts[start] == 0): start = start + 1
-start = start + 1250
-print(counts[start:start+50])
 
+end = len(counts)
+while (counts[end-1] == 0): end = end - 1
 
-""""
-m = Model( "c", "Data/codec")
-results = m.fit("ie vous mon⌠treray le⌠pou⌠e la femme a laignel, & me mena en", counts[start:])
+m = Model( "c")
 
-state = 2
-col = 30
-print("({0},{1}):\t{2}:\t{3}".format(state,col,counts[col],m.forwards(state,col)))
+results = m.fit("ie vous mon⌠treray le⌠pou⌠e la femme a laignel, & me mena en", counts[start:end])
+
 """
+# e = m.expected()
+fw = m.forwards()
+for x in fw:#range(len(e)):
+    print(reduce(lambda a,b: a+b, x, 0))
+    #if e[x] != 0.0:
+    #print("{0}:\t{1:.5e}".format(x,e[x]))
+"""
+# bw = m.backwards()
+fw = m.forwards()
+"""
+for i in range(len(fw)):
+    print("{0}:\t{1}".format(i, fw[i][0]))
+    if reduce(lambda x,y: x and (y==0.0), fw[i], True):
+        print("Forward ends:\t{0}".format(i))
+        break
+"""
+print(min(fw[-1]))
+
+
+# TODO
+# log version of backwards
+# log version of other training functions
+# heat map of probabilities (to show likely wrong values and visualise training)
+# training
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

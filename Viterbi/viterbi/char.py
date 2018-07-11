@@ -36,3 +36,7 @@ class Char(object):
             previous = previous.next
             index = index + 1
         return previous
+
+    def store(self):
+        """Get all data to store character."""
+        return self.name, self.states #list(map(lambda x,y: [x,y], self.states))
