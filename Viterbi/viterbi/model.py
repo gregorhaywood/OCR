@@ -9,40 +9,7 @@ from functools import reduce
 
 from viterbi.char import Char
 from math import log, exp
-import sys
-
-
-ZERO = sys.float_info[0]
-PREC = -log(sys.float_info[3])-log(3)
-def to(x):
-    if x>0:
-        return -log(x)
-    else:
-        return ZERO
-
-def fr(x):
-    return exp(-x)
-
-def mult(a,b):
-    if a == ZERO or b == ZERO:
-        return ZERO
-    else:
-        return a+b
-
-def add(a,b):
-    # handle zero
-    if a == ZERO:
-        return b
-    if b == ZERO:
-        return a
-    # handle extremes
-    if a-b > PREC:
-        return b
-    if b-a > PREC:
-        return a
-    # normal
-    c = min(a,b)
-    return -log(exp(-a+c)+exp(-b+c))+c
+from viterbi.negLog import NegLog
 
 
 class Model(object):
@@ -113,28 +80,28 @@ class Model(object):
 
         # col  can only be on state
         forward = []
-        forward.append([to(self.stateList[0].emission(self.img[0]))]
-                    + [to(0)]*(len(self.stateList)-1))
+        forward.append([(self.stateList[0].emission(self.img[0]))]
+                    + [NegLog(0)]*(len(self.stateList)-1))
         # other cols
         for col in range(1,len(self.img)):
             # state is at most col
             colList = []
             for state in range(col+1):
                 try:
-                    em = (self.stateList[state].emission(self.img[col]))
+                    em = self.stateList[state].emission(self.img[col])
                 except IndexError:
                     continue
-                change = to(0)
+                change = NegLog(0)
                 if state > 0:
-                    change = mult(forward[col-1][state-1],to(self.stateList[state-1].getTrans()))
-                same = to(0)
+                    change = forward[col-1][state-1] * self.stateList[state-1].getTrans()
+                same = NegLog(0)
                 # col-1 might not have an entry for state
                 try:
-                    same = mult(forward[col-1][state],to(self.stateList[state-1].getStay()))
+                    same = forward[col-1][state] * self.stateList[state-1].getStay()
                 except IndexError:
                     pass
-                colList.append(mult(add(change,same),em))
-            colList = colList + ([to(0)]*(len(self.stateList)-len(colList)))
+                colList.append((change+same) * em)
+            colList = colList + ([NegLog(0)]*(len(self.stateList)-len(colList)))
             forward.append(colList)
         self.forward = forward
         return self.forward
@@ -145,7 +112,7 @@ class Model(object):
         backward = [[]]*len(self.img)
 
         # col  can only be on state
-        backward[-1] = [0]*(len(self.stateList)-1) + [(self.stateList[-1].emission(self.img[-1]))]
+        backward[-1] = [NegLog(0)]*(len(self.stateList)-1) + [self.stateList[-1].emission(self.img[-1])]
 
         # other cols
         for col in range(len(self.img)-2,-1,-1):
@@ -156,36 +123,37 @@ class Model(object):
             for state in range(start ,end,-1):
                 if (state < 0):
                     break
-                em = (self.stateList[state].emission(self.img[col]))
-                change = 0
+                em = self.stateList[state].emission(self.img[col])
+                change = NegLog(0)
                 # state index may be out of bounds
                 try:
                     change = backward[col+1][state+1]*self.stateList[state].getTrans()
                 except IndexError:
                     pass
-                same = 0
+                same = NegLog(0)
                 try:
                     same = backward[col+1][state]*self.stateList[state].getStay()
                 except IndexError:
                     pass
                 colList.insert(0, ((change+same)*em))
-            colList = [0]*(len(self.stateList)-len(colList)) + colList
+            colList = [NegLog(0)]*(len(self.stateList)-len(colList)) + colList
             backward[col] = colList
         self.backward = backward
         return self.backward
 
     def expected(self):
-        """For training."""
-        # i: state
-        # j: col
-        # forward(i, j) * P(a, k, k+1) * backward(i[+1], j+1)
+        """Probability of a transition occuring after a column."""
         if self.forward == []:
             self.forwards()
         if self.backward == []:
             self.backwards()
+
+        """
         change = []
+        # for every image column
         for col in range(len(self.img)):
-            e = 0
+            e = NegLog(0)
+            # for every possible state
             for state in range(len(self.stateList)):
                 f = self.forward[col][state]
                 try:
@@ -193,26 +161,66 @@ class Model(object):
                 except IndexError:
                     # no transition past last state or col
                     continue
-                # normalise
-                # balance scaling
-                # scaling gets too complex
-                # use alternative representation
 
-                lim = 1000000
-                if f > lim: f = lim
-                if b > lim: b = lim
                 t = self.stateList[state].getTrans()
                 e = e + f*b*t
-                """
-                print("F:\t{0}".format(f))
-                print("B:\t{0}".format(b))
-                print("T:\t{0}".format(t))
-                print("F.B.T:\t{0}".format(f*b*t))
-                print("E:\t{0}".format(e))
-                print()
-                """
             change.append(e)
-        return change
+        """
+        # updated to state version
+        change = []
+        for state in range(len(self.stateList)):
+            e = NegLog(0)
+            for col in range(len(self.img)):
+                f = self.forward[col][state]
+                try:
+                    b = self.backward[col+1][state+1]
+                except IndexError:
+                    # no transition past last state or col
+                    continue
+                t = self.stateList[state].getTrans()
+                e = e + f*b*t
+            change.append(e)
+
+        """
+        stay = []
+        # for every image column
+        for col in range(len(self.img)):
+            e = NegLog(0)
+            # for every possible state
+            for state in range(len(self.stateList)):
+                f = self.forward[col][state]
+                try:
+                    b = self.backward[col+1][state]
+                except IndexError:
+                    # no transition past last state or col
+                    continue
+
+                t = self.stateList[state].getStay()
+                e = e + f*b*t
+            stay.append(e)
+        """
+
+        # updated to state version
+        stay = []
+        for state in range(len(self.stateList)):
+            e = NegLog(0)
+            for col in range(len(self.img)):
+                f = self.forward[col][state]
+                try:
+                    b = self.backward[col+1][state]
+                except IndexError:
+                    # no transition past last state or col
+                    continue
+                t = self.stateList[state].getStay()
+                e = e + f*b*t
+            stay.append(e)
+
+        update = []
+        for i in range(len(change)-1):
+            update.append(change[i]/(change[i]+stay[i]))
+        return update
+
+
 """
 backward(L, M) = P(a,k,n_M)
 where a is the last letter in the transcription, with k states.
@@ -273,4 +281,64 @@ if k>1:
 else:
     a' = previous letter
     k' = final state of a'
+"""
+
+
+
+"""
+Training
+trans: expected probability of state transitions for a column, i
+    The sum of probabilities of state transition for each possible state of the column
+    For each state j, the probability is:
+        forwards(i,j)*stateChanged(i)*backwards(i+1,j+1)
+
+stay: expected probability of no state transition after column i
+    Sum for all states, as above
+    For each state j:
+        forwards(i,j)*stateUnchanged(i)*backwards(i+1,j)
+
+
+
+Training is more complex. It is not for each column, but for each state.
+change:
+For the state (a,k):
+i is derived from a and k.
+For each col, j:
+    forward(i, j) * P(a, k, k+1) * backward(i[+1]?, j+1)
+
+stay:
+For (a,k) with derived i
+    forward(i, j) [* P(a, k, k)]? * backward(i, j+1)
+
+Sum of all paths consistent with observation
+
+In both cases, sum for all j, and resetimate by:
+change/(change+stay)
+Normalisation cancels out, so is not needed.
+
+(a,k) can coresponse to multiple states with different i. How should this be handled?
+-mean
+-handle seperatly, combine later
+
+Are these formula correct?
+Can stay be summed, as they are not exclusive possibilities?
+
+For mu:
+For (a,k)..i as above
+For all j:
+    E(a,k,i,j,n_i) = forward(i, j) * backward(i, j) [ / (emit(n_i)) due to implementation]
+How does this give mu?
+
+ln(n) for each count gives an estimate of mu. Multiply by probability given above,
+sum, and divide by forward(total)?
+
+Average of logs weighted by f/b probability
+
+
+
+The -1 in the emit probability will cause problems and needs dealt with, either there,
+or by adding 1 to counts here.
+
+
+
 """

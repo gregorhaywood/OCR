@@ -5,6 +5,7 @@ It abstracts over letters.
 
 from scipy.stats import lognorm
 from math import sqrt, pi, exp, log
+from viterbi.negLog import NegLog
 
 
 class State(object):
@@ -23,36 +24,34 @@ class State(object):
         # 100 trans = (1-trans)t
         # (100 trans)/(1-trans) = t
         self.trans = trans # (100*trans)/(1-trans)
-        self.sigma = 0.5 # 0.4
+        self.sigma = 0.5
         self.mu = mu
 
-    def emission(self, x):
-        """Get the probability of a given emission.
-        This version accounts for the number of pixels
-        with mu (the peak of the distribution), and
-        accuracy with sigma (the deviation).
-        """
+    def _emit(self, n):
+        """Get the probability of a given emission."""
         a = 1/(self.sigma*sqrt(2*pi))
-        b = (log(x+1)-self.mu)/self.sigma
+        b = (log(n+1)-self.mu)/self.sigma
         t = a*exp(-0.5*pow(b, 2))
         return t
-        # return lognorm.pdf(x, self.sigma, scale=exp(self.mu))
-        """
-        if self.mu > 0:
-            return lognorm.pdf(x, self.sigma, scale=exp(self.mu))
-        else:
-            return lognorm.pdf(x, self.sigma, scale=exp(1))
-        """
 
-    def _getNext(self, x):
+    def emission(self, n):
+        """Get the negLog representation of the emission probability"""
+        return NegLog(self._emit(n))
+
+    def _getNext(self, pixels):
         """Get the next state given a starting state and pixel count."""
         if self.next is None:
             return self
-        stay = self.getStay()*self.emission(x)
-        go = self.getTrans()*self.next.emission(x)
+        stay = self.getStay()*self.emission(pixels)
+        go = self.getTrans()*self.next.emission(pixels)
         if stay>go:
+            #TODO
+            #print(self.char + str(self.name) + "\t" +
+            #    str(pixels) + "\t" + str(self.emission(pixels)))
             return self
         else:
+            #print(self.char + str(self.name) + "\t" +
+            #    str(pixels) + "\t" + str(self.next.emission(pixels)))
             return self.next
 
     def __str__(self):
@@ -73,8 +72,8 @@ class State(object):
                 return states + self.next.fit(line)
         return states
 
-    def getTrans(self): return self.trans
-    def getStay(self): return 1-self.trans
+    def getTrans(self): return NegLog(self.trans)
+    def getStay(self): return NegLog(1-self.trans)
 
 """
 Each state should have a transition probability,

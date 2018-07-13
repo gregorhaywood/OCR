@@ -10,3 +10,5 @@ __version__ = '0.1 In Development'
 
 from viterbi.state import State
 from viterbi.char import Char
+from viterbi.negLog import NegLog
+from viterbi.model import Model

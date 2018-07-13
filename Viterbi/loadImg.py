@@ -153,6 +153,7 @@ def myModel(fname):
     """
     imsave("Data/model.png", np.array(output).transpose(1,0,2), format="png")
 
+
 def testProb(fname, startState=0, startCol=0):
     img = np.array(imread(fname))
     counts = list(map(lambda x: len(img)-x.sum(), img.transpose()))
@@ -174,8 +175,8 @@ fname = "Data/img.png"
 # runHMM(fname)
 # testProb(fname,2,6)
 # myModel(fname)
+import csv
 
-print("Functions done")
 
 img = np.array(imread(fname))
 counts = list(map(lambda x: len(img)-x.sum(), img.transpose()))
@@ -189,28 +190,43 @@ m = Model( "c")
 
 results = m.fit("ie vous mon⌠treray le⌠pou⌠e la femme a laignel, & me mena en", counts[start:end])
 
+
+
+e = m.expected()
+for i in range(len(e)):
+    print("{0}:\t{1}".format(m.stateList[i], e[i].prob()))
+
 """
-# e = m.expected()
+bw = m.backwards()
 fw = m.forwards()
-for x in fw:#range(len(e)):
-    print(reduce(lambda a,b: a+b, x, 0))
-    #if e[x] != 0.0:
-    #print("{0}:\t{1:.5e}".format(x,e[x]))
+
+file = open("forwards.csv", "w")
+writer = csv.writer(file)
+for col in fw: # image col, not array col
+    writer.writerow(col)
+file.close()
+
+file = open("backwards.csv", "w")
+writer = csv.writer(file)
+for col in bw: # image col, not array col
+    writer.writerow(col)
+file.close()
 """
-# bw = m.backwards()
-fw = m.forwards()
 """
 for i in range(len(fw)):
-    print("{0}:\t{1}".format(i, fw[i][0]))
-    if reduce(lambda x,y: x and (y==0.0), fw[i], True):
+    #print("{0}:\t{1}".format(i, fw[i][0]))
+    if reduce(lambda x,y: x and (y.isZero()), fw[i], True):
         print("Forward ends:\t{0}".format(i))
         break
+
+
+for i in range(len(bw)-1,0,-1):
+    #print("{0}:\t{1}".format(i, bw[i][0]))
+    if reduce(lambda x,y: x and (y.isZero()), bw[i], True):
+        print("Backwards ends:\t{0}".format(i))
+        break
 """
-print(min(fw[-1]))
-
-
 # TODO
-# log version of backwards
 # log version of other training functions
 # heat map of probabilities (to show likely wrong values and visualise training)
 # training
