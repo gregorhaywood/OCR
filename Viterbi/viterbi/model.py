@@ -14,7 +14,6 @@ from viterbi.negLog import NegLog
 
 class Model(object):
 
-
     def __init__(self, mode, fname=None):
         """Load a model from a file or create one from a codec.
         Mode can be "o" to open an existing model or "c" to create
@@ -40,11 +39,11 @@ class Model(object):
             c = line[0]
             states = []
             for i in range(1,len(line),2):
-                states.append((float(line[i]),float(line[i+1])))
+                states.append((NegLog(negLog=float(line[i])),float(line[i+1])))
             self.codec[c] = Char(c, states)
         file.close()
 
-    def storeModel(self, fname):
+    def store(self, fname):
         """Store a model for future use"""
         file = open(fname, "w")
         writer = csv.writer(file)
@@ -148,24 +147,6 @@ class Model(object):
         if self.backward == []:
             self.backwards()
 
-        """
-        change = []
-        # for every image column
-        for col in range(len(self.img)):
-            e = NegLog(0)
-            # for every possible state
-            for state in range(len(self.stateList)):
-                f = self.forward[col][state]
-                try:
-                    b = self.backward[col+1][state+1]
-                except IndexError:
-                    # no transition past last state or col
-                    continue
-
-                t = self.stateList[state].getTrans()
-                e = e + f*b*t
-            change.append(e)
-        """
         # updated to state version
         change = []
         for state in range(len(self.stateList)):
@@ -181,25 +162,6 @@ class Model(object):
                 e = e + f*b*t
             change.append(e)
 
-        """
-        stay = []
-        # for every image column
-        for col in range(len(self.img)):
-            e = NegLog(0)
-            # for every possible state
-            for state in range(len(self.stateList)):
-                f = self.forward[col][state]
-                try:
-                    b = self.backward[col+1][state]
-                except IndexError:
-                    # no transition past last state or col
-                    continue
-
-                t = self.stateList[state].getStay()
-                e = e + f*b*t
-            stay.append(e)
-        """
-
         # updated to state version
         stay = []
         for state in range(len(self.stateList)):
@@ -214,11 +176,32 @@ class Model(object):
                 t = self.stateList[state].getStay()
                 e = e + f*b*t
             stay.append(e)
+
+        mu = []
+        for state in range(len(self.stateList)):
+            e = NegLog(0)
+            allPaths = NegLog(0)
+            for col in range(len(self.img)):
+                f = self.forward[col][state]
+                b = self.backward[col][state]
+                emit = self.stateList[state].emission(self.img[col])
+                path = f*b/emit
+                allPaths = allPaths + path
+                e = e + path*NegLog(log(self.img[col]+1))
+            mu.append(e/allPaths)
 
         update = []
         for i in range(len(change)-1):
             update.append(change[i]/(change[i]+stay[i]))
-        return update
+
+        # TODO
+        # mu: updated mus, neglog form
+        # update: updated transitions, neglog
+        """
+        Work out appropriate structure for training
+        Handle multiple occurances of a state
+        """
+        return mu
 
 
 """
@@ -235,11 +218,9 @@ backward(i, j) = [
 
 
         the probability of going back to this column and being in this state
-"""
 
 
 
-"""
 
     forward(i, j+1) = [ forward(i-1, j) * P(a', k', k) + forward(i, j) * P(a, k, k) ] *
 						P(a,k,n_{j+1})
@@ -281,11 +262,9 @@ if k>1:
 else:
     a' = previous letter
     k' = final state of a'
-"""
 
 
 
-"""
 Training
 trans: expected probability of state transitions for a column, i
     The sum of probabilities of state transition for each possible state of the column
@@ -337,7 +316,7 @@ Average of logs weighted by f/b probability
 
 
 The -1 in the emit probability will cause problems and needs dealt with, either there,
-or by adding 1 to counts here.
+or by adding 1 to counts here. It is delt with here, else log(0) would cause errors
 
 
 

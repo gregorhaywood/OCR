@@ -175,6 +175,9 @@ fname = "Data/img.png"
 # runHMM(fname)
 # testProb(fname,2,6)
 # myModel(fname)
+
+
+
 import csv
 
 

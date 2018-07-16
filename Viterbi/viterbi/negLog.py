@@ -37,9 +37,9 @@ class NegLog(object):
             return NegLog(negLog=(self._val-other._val))
 
     def __add__(self, other):
-        if other.isZero():
+        if other.isZero() or other._val-self._val>_PREC:
             return self.clone()
-        elif self.isZero():
+        elif self.isZero() or self._val-other._val>_PREC:
             return other.clone()
         else:
             a = self._val
@@ -47,11 +47,18 @@ class NegLog(object):
             mn = min(a,b)
             mx = max(a,b)
             return NegLog(negLog=(-log(1+exp(mn-mx))+mn))
-        #TODO
-        """
-        Precision checks - include them
-        Minimises loss by rounding
-        """
+
+    def __sub__(self,other):
+        if other.isZero() or other._val-self._val>_PREC:
+            return self.clone()
+        if other > self:
+            raise ValueError("Cannot represent negative numbers in negaltive log form.")
+        else:
+            a = self._val
+            b = other._val
+            mn = min(a,b)
+            mx = max(a,b)
+            return NegLog(negLog=(-log(1-exp(mn-mx))+mn))
 
     def __lt__(self, other):
         return self._val > other._val

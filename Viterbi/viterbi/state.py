@@ -72,8 +72,8 @@ class State(object):
                 return states + self.next.fit(line)
         return states
 
-    def getTrans(self): return NegLog(self.trans)
-    def getStay(self): return NegLog(1-self.trans)
+    def getTrans(self): return (self.trans)
+    def getStay(self): return NegLog(1)-self.trans
 
 """
 Each state should have a transition probability,
