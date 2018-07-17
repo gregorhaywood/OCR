@@ -6,10 +6,11 @@ import sys
 import os
 import csv
 from functools import reduce
+from math import log, exp
 
 from viterbi.char import Char
-from math import log, exp
 from viterbi.negLog import NegLog
+from viterbi.stateList import StateList
 
 
 class Model(object):
@@ -55,23 +56,16 @@ class Model(object):
 
     def fit(self, line, img, fb=False):
         """Get the states for a line transcription"""
-        class Start(object):
-            def __init__(self):
-                self.next = True
-        start = Start()
+        # return StateList(self.codec, line, img)
 
-        previous = self.codec[line[0]].getStates(start)
-        for c in line[1:]:
-            previous = self.codec[c].getStates(previous)
-        results = start.next.fit(img)
-        self.stateList = start.next.toList()
+        self.stateList = StateList(self.codec, line, img)
         self.img = img
         self.forward = []
         self.backward = []
         if fb:
             self.forwards()
             self.backwards()
-        return results
+        return self.stateList.fit()
 
     def forwards(self):
         if self.forward != []:
@@ -79,7 +73,7 @@ class Model(object):
 
         # col  can only be on state
         forward = []
-        forward.append([(self.stateList[0].emission(self.img[0]))]
+        forward.append([(self.stateList[0].getEmission(self.img[0]))]
                     + [NegLog(0)]*(len(self.stateList)-1))
         # other cols
         for col in range(1,len(self.img)):
@@ -87,7 +81,7 @@ class Model(object):
             colList = []
             for state in range(col+1):
                 try:
-                    em = self.stateList[state].emission(self.img[col])
+                    em = self.stateList[state].getEmission(self.img[col])
                 except IndexError:
                     continue
                 change = NegLog(0)
@@ -111,7 +105,7 @@ class Model(object):
         backward = [[]]*len(self.img)
 
         # col  can only be on state
-        backward[-1] = [NegLog(0)]*(len(self.stateList)-1) + [self.stateList[-1].emission(self.img[-1])]
+        backward[-1] = [NegLog(0)]*(len(self.stateList)-1) + [self.stateList[-1].getEmission(self.img[-1])]
 
         # other cols
         for col in range(len(self.img)-2,-1,-1):
@@ -122,7 +116,7 @@ class Model(object):
             for state in range(start ,end,-1):
                 if (state < 0):
                     break
-                em = self.stateList[state].emission(self.img[col])
+                em = self.stateList[state].getEmission(self.img[col])
                 change = NegLog(0)
                 # state index may be out of bounds
                 try:
@@ -184,7 +178,7 @@ class Model(object):
             for col in range(len(self.img)):
                 f = self.forward[col][state]
                 b = self.backward[col][state]
-                emit = self.stateList[state].emission(self.img[col])
+                emit = self.stateList[state].getEmission(self.img[col])
                 path = f*b/emit
                 allPaths = allPaths + path
                 e = e + path*NegLog(log(self.img[col]+1))

@@ -176,7 +176,7 @@ fname = "Data/img.png"
 # testProb(fname,2,6)
 # myModel(fname)
 
-
+# print("done")
 
 import csv
 
@@ -194,12 +194,12 @@ m = Model( "c")
 results = m.fit("ie vous mon⌠treray le⌠pou⌠e la femme a laignel, & me mena en", counts[start:end])
 
 
-
+"""
 e = m.expected()
 for i in range(len(e)):
     print("{0}:\t{1}".format(m.stateList[i], e[i].prob()))
-
 """
+
 bw = m.backwards()
 fw = m.forwards()
 
@@ -214,7 +214,7 @@ writer = csv.writer(file)
 for col in bw: # image col, not array col
     writer.writerow(col)
 file.close()
-"""
+
 """
 for i in range(len(fw)):
     #print("{0}:\t{1}".format(i, fw[i][0]))
