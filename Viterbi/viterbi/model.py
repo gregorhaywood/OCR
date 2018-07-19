@@ -7,6 +7,7 @@ import os
 import csv
 from functools import reduce
 from math import log, exp
+from random import Random as Rnd
 
 from viterbi.char import Char
 from viterbi.negLog import NegLog
@@ -20,21 +21,20 @@ class Model(object):
         Mode can be "o" to open an existing model or "c" to create
         a new one.
         """
-        self.forward = []
-        self.backward = []
         if mode=="o":
             self._openModel(fname)
         elif mode=="c":
             package, _ = os.path.split(__file__)
             fname = package + "/data/codec.csv"
             self._openModel(fname)
+        elif mode=="r":
+            self._makeRandom()
         else:
             raise Exception("Mode \"" + mode + "\"not recognised.")
 
     def _openModel(self, fname):
-        """Create an untrained model."""
-        package, _ = os.path.split(__file__)
-        file = open(package + "/data/codec.csv", "r")
+        """Open an model."""
+        file = open(fname,"r")
         self.codec = {}
         for line in csv.reader(file):
             c = line[0]
@@ -43,6 +43,45 @@ class Model(object):
                 states.append((NegLog(negLog=float(line[i])),float(line[i+1])))
             self.codec[c] = Char(c, states)
         file.close()
+
+    def _makeRandom(self):
+
+        # for simplicity
+        chars = " &,-.:ABCDEFGHILMNOPQRSTVabcdefghilmnopp̃qq̃rstuvxyzãõĩũſṹẽ❧➽ꝑꝓꝗꝯ"
+        short = ",.:ſ\-fijl1"
+        medium = "ABCDEFGHIJKLNOPQRSTUVXYZabcdeghkopqstuvxyz023456789ãõĩũṹẽ&p̃ꝑꝓꝗꝯq̃"
+        longChar = "MWmnrw❧➽"
+
+        rnd = Rnd()
+        codec = {}
+        for c in chars:
+            if c == " ":
+                codec[c] = Char(c, [(NegLog(0.5), 0)])
+            elif c in longChar:
+                states = []
+                for i in range(6):
+                    tr = 0.5#rnd.randrange(40,60)/100
+                    mu = rnd.randrange(10,30,5)/10
+                    states.append((NegLog(tr),mu))
+                states.append((NegLog(0.5),0))
+                codec[c] = Char(c, states)
+            elif c in medium:
+                states = []
+                for i in range(4):
+                    tr = rnd.randrange(25,75)/100
+                    mu = rnd.randrange(100,500)/100
+                    states.append((NegLog(tr),mu))
+                states.append((NegLog(0.5),0))
+                codec[c] = Char(c, states)
+            elif c in short:
+                states = []
+                for i in range(2):
+                    tr = rnd.randrange(25,75)/100
+                    mu = rnd.randrange(100,500)/100
+                    states.append((NegLog(tr),mu))
+                states.append((NegLog(0.5),0))
+                codec[c] = Char(c, states)
+        self.codec = codec
 
     def store(self, fname):
         """Store a model for future use"""
@@ -54,150 +93,25 @@ class Model(object):
             writer.writerow(row)
         file.close()
 
-    def fit(self, line, img, fb=False):
+    def fit(self, line, img):
         """Get the states for a line transcription"""
-        # return StateList(self.codec, line, img)
-
+        # TODO
+        # use fname following ocropus convention
         self.stateList = StateList(self.codec, line, img)
         self.img = img
-        self.forward = []
-        self.backward = []
-        if fb:
-            self.forwards()
-            self.backwards()
         return self.stateList.fit()
 
     def forwards(self):
-        if self.forward != []:
-            return self.forward
-
-        # col  can only be on state
-        forward = []
-        forward.append([(self.stateList[0].getEmission(self.img[0]))]
-                    + [NegLog(0)]*(len(self.stateList)-1))
-        # other cols
-        for col in range(1,len(self.img)):
-            # state is at most col
-            colList = []
-            for state in range(col+1):
-                try:
-                    em = self.stateList[state].getEmission(self.img[col])
-                except IndexError:
-                    continue
-                change = NegLog(0)
-                if state > 0:
-                    change = forward[col-1][state-1] * self.stateList[state-1].getTrans()
-                same = NegLog(0)
-                # col-1 might not have an entry for state
-                try:
-                    same = forward[col-1][state] * self.stateList[state-1].getStay()
-                except IndexError:
-                    pass
-                colList.append((change+same) * em)
-            colList = colList + ([NegLog(0)]*(len(self.stateList)-len(colList)))
-            forward.append(colList)
-        self.forward = forward
-        return self.forward
+        return self.stateList.forwards()
 
     def backwards(self):
-        if self.backward != []:
-            return self.backward
-        backward = [[]]*len(self.img)
-
-        # col  can only be on state
-        backward[-1] = [NegLog(0)]*(len(self.stateList)-1) + [self.stateList[-1].getEmission(self.img[-1])]
-
-        # other cols
-        for col in range(len(self.img)-2,-1,-1):
-            # state is at most col
-            colList = []
-            start = len(self.stateList)-1
-            end = start - (len(self.img)-col)-1
-            for state in range(start ,end,-1):
-                if (state < 0):
-                    break
-                em = self.stateList[state].getEmission(self.img[col])
-                change = NegLog(0)
-                # state index may be out of bounds
-                try:
-                    change = backward[col+1][state+1]*self.stateList[state].getTrans()
-                except IndexError:
-                    pass
-                same = NegLog(0)
-                try:
-                    same = backward[col+1][state]*self.stateList[state].getStay()
-                except IndexError:
-                    pass
-                colList.insert(0, ((change+same)*em))
-            colList = [NegLog(0)]*(len(self.stateList)-len(colList)) + colList
-            backward[col] = colList
-        self.backward = backward
-        return self.backward
+        return self.stateList.backwards()
 
     def expected(self):
-        """Probability of a transition occuring after a column."""
-        if self.forward == []:
-            self.forwards()
-        if self.backward == []:
-            self.backwards()
+        return self.stateList.expected()
 
-        # updated to state version
-        change = []
-        for state in range(len(self.stateList)):
-            e = NegLog(0)
-            for col in range(len(self.img)):
-                f = self.forward[col][state]
-                try:
-                    b = self.backward[col+1][state+1]
-                except IndexError:
-                    # no transition past last state or col
-                    continue
-                t = self.stateList[state].getTrans()
-                e = e + f*b*t
-            change.append(e)
-
-        # updated to state version
-        stay = []
-        for state in range(len(self.stateList)):
-            e = NegLog(0)
-            for col in range(len(self.img)):
-                f = self.forward[col][state]
-                try:
-                    b = self.backward[col+1][state]
-                except IndexError:
-                    # no transition past last state or col
-                    continue
-                t = self.stateList[state].getStay()
-                e = e + f*b*t
-            stay.append(e)
-
-        mu = []
-        for state in range(len(self.stateList)):
-            e = NegLog(0)
-            allPaths = NegLog(0)
-            for col in range(len(self.img)):
-                f = self.forward[col][state]
-                b = self.backward[col][state]
-                emit = self.stateList[state].getEmission(self.img[col])
-                path = f*b/emit
-                allPaths = allPaths + path
-                e = e + path*NegLog(log(self.img[col]+1))
-            mu.append(e/allPaths)
-
-        update = []
-        for i in range(len(change)-1):
-            update.append(change[i]/(change[i]+stay[i]))
-
-        # TODO
-        # mu: updated mus, neglog form
-        # update: updated transitions, neglog
-        """
-        Work out appropriate structure for training
-        Handle multiple occurances of a state
-        """
-        return mu
-
-
+    def update(self):
+        self.stateList.update()
 """
 backward(L, M) = P(a,k,n_M)
 where a is the last letter in the transcription, with k states.

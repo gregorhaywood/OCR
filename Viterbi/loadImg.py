@@ -5,6 +5,10 @@ from viterbi.char import Char
 from viterbi.model import Model
 from functools import reduce
 
+import os
+import glob
+import sys
+
 
 
 
@@ -95,7 +99,8 @@ def myModel(fname):
     while (counts[start] == 0): start = start + 1
     end = len(counts)
     while (counts[end-1] == 0): end = end - 1
-    m = Model( "c", "Data/codec")
+    m = Model( "c")
+
     results = m.fit("ie vous mon⌠treray le⌠pou⌠e la femme a laignel, & me mena en", counts[start:end])
 
     def c(col):
@@ -136,21 +141,6 @@ def myModel(fname):
             output[i][-3] = black
             output[i][-4] = black
 
-    # mark mean
-    """
-    trans = img.transpose()
-    m = len(img)/2
-    for col in range(len(output)):
-        bl = []
-        for i in range(len(trans[col])):
-            if isChar(trans[col][i]):
-                bl.append(i)
-        m2 = m
-        if len(bl)>0:
-            m2 = reduce(lambda x,y: x+y, bl)/len(bl)
-        m = (30*m+m2+len(img)/2)/32
-        output[col][int(m)] = red
-    """
     imsave("Data/model.png", np.array(output).transpose(1,0,2), format="png")
 
 
@@ -169,6 +159,122 @@ def testProb(fname, startState=0, startCol=0):
 
 
 
+def storeImg(m, img, fname):
+    #img = np.array(imread(fname))
+    counts = list(map(lambda x: len(img)-x.sum(), img.transpose()))
+    start = 0
+    while (counts[start] == 0): start = start + 1
+    end = len(counts)
+    while (counts[end-1] == 0): end = end - 1
+    #m = Model( "c", "Data/codec")
+    results = m.fit("ie vous mon⌠treray le⌠pou⌠e la femme a laignel, & me mena en", counts[start:end])
+
+    def c(col):
+        if results[col][0] ==  " ":
+            return white
+        v = int(results[col][1])
+        if v == 0:
+            return magenta
+        v = v%5
+        if v == 0:
+            return cyan
+        if v == 1:
+            return green
+        if v == 2:
+            return blue
+        if v == 3:
+            return yellow
+        if v == 4:
+            return red
+        return None
+
+    trans = img.transpose()
+    output = []
+    for col in range(start):
+        output.append([white]*len(img))
+    for col in range(len(results)):
+        val = 1-trans[col+start].sum()/len(img)
+        output.append(list(map(
+            lambda x: black if isChar(x) else c(col),
+            trans[col+start])))
+
+    for i in range(len(output)):
+        if i%50==0:
+            output[i][-1] = black
+            output[i][-2] = black
+
+        if i%100==0:
+            output[i][-3] = black
+            output[i][-4] = black
+
+    imsave(fname, np.array(output).transpose(1,0,2), format="png")
+
+
+
+
+def trainOn(model, path):
+    dr, fname = os.path.split(path)
+
+    img = np.array(imread(path + ".bin.png"))
+    counts = list(map(lambda x: len(img)-x.sum(), img.transpose()))
+    start = 0
+    while (counts[start] == 0): start = start + 1
+    end = len(counts)
+    while (counts[end-1] == 0): end = end - 1
+
+    with open(path + ".gt.txt") as f:
+        line = f.read()[:-1]
+    if len(line) == 0:
+        return
+
+    results = m.fit(line, counts[start:end])
+    m.expected()
+    m.update()
+
+    m.store("Results/" + path + ".csv")
+
+    def c(col):
+        if results[col][0] ==  " ":
+            return white
+        v = int(results[col][1])
+        if v == 0:
+            return magenta
+        v = v%5
+        if v == 0:
+            return cyan
+        if v == 1:
+            return green
+        if v == 2:
+            return blue
+        if v == 3:
+            return yellow
+        if v == 4:
+            return red
+        return None
+
+    trans = img.transpose()
+    output = []
+    for col in range(start):
+        output.append([white]*len(img))
+    for col in range(len(results)):
+        val = 1-trans[col+start].sum()/len(img)
+        output.append(list(map(
+            lambda x: black if isChar(x) else c(col),
+            trans[col+start])))
+
+    for i in range(len(output)):
+        if i%50==0:
+            output[i][-1] = black
+            output[i][-2] = black
+
+        if i%100==0:
+            output[i][-3] = black
+            output[i][-4] = black
+
+    imsave("Results/" + path + ".png", np.array(output).transpose(1,0,2), format="png")
+    #storeImg(m,img,"Results/" + path + ".png")
+    print("Trained on {0}".format(path))
+
 
 fname = "Data/img.png"
 # makeHeatMap(fname)
@@ -180,64 +286,76 @@ fname = "Data/img.png"
 
 import csv
 
-
 img = np.array(imread(fname))
 counts = list(map(lambda x: len(img)-x.sum(), img.transpose()))
 start = 0
 while (counts[start] == 0): start = start + 1
-
 end = len(counts)
 while (counts[end-1] == 0): end = end - 1
 
-m = Model( "c")
+m = Model( "r")
 
-results = m.fit("ie vous mon⌠treray le⌠pou⌠e la femme a laignel, & me mena en", counts[start:end])
+os.chdir("Training")
+for i in range(1,7):
+    print("Page:\t{0}".format(i))
+    files = glob.glob("000{0}/0001/*.txt".format(i))
+    files.sort()
+    for file in files:
+        trainOn(m, file.split(".")[0])
+os.chdir("..")
+sys.exit(0)
 
+stepSize = 2
 
-"""
-e = m.expected()
-for i in range(len(e)):
-    print("{0}:\t{1}".format(m.stateList[i], e[i].prob()))
-"""
+results = m.fit("ie vous monſtreray leſpouſe la femme a laignel, & me mena en", counts[start:end])
+storeImg(m,img,"Data/model.png")
 
-bw = m.backwards()
-fw = m.forwards()
+#sys.exit(0)
 
-file = open("forwards.csv", "w")
-writer = csv.writer(file)
-for col in fw: # image col, not array col
-    writer.writerow(col)
-file.close()
+for i in range(stepSize):
+    m.expected()
+    m.update()
 
-file = open("backwards.csv", "w")
-writer = csv.writer(file)
-for col in bw: # image col, not array col
-    writer.writerow(col)
-file.close()
+m.store("codex2")
+storeImg(m,img,"Data/model2.png")
+print("Training 1 Done")
 
-"""
-for i in range(len(fw)):
-    #print("{0}:\t{1}".format(i, fw[i][0]))
-    if reduce(lambda x,y: x and (y.isZero()), fw[i], True):
-        print("Forward ends:\t{0}".format(i))
-        break
+for i in range(stepSize):
+    m.expected()
+    m.update()
+m.store("codex3")
+storeImg(m,img,"Data/model3.png")
+print("Training 2 Done")
 
+for i in range(stepSize):
+    m.expected()
+    m.update()
+m.store("codex4")
+storeImg(m,img,"Data/model4.png")
 
-for i in range(len(bw)-1,0,-1):
-    #print("{0}:\t{1}".format(i, bw[i][0]))
-    if reduce(lambda x,y: x and (y.isZero()), bw[i], True):
-        print("Backwards ends:\t{0}".format(i))
-        break
-"""
-# TODO
-# log version of other training functions
-# heat map of probabilities (to show likely wrong values and visualise training)
-# training
+# TODO - general
+# readability/maintainability/documentation
+#
 
+#TODO -today
+# random start - done
+# training infrastructure - done
+#
 
+# TODO - avoid min/max
+# random strart codex
+# mass data training infrastructure
+# just increase transition probability for states that appear lots
+# MAYBE:
+# setting state number:
+    # merge states that have similar mu
+        # (ie, e1(n)*stay > e2(n)*stay for most reasonabe n
+    # split states that have diverse emission probabilities
 
-
-
+# TODO enhancments
+# parallel forwards/backwards/training
+# trimming unwanted black marks
+# non-binary image version
 
 
 

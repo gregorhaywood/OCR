@@ -34,6 +34,34 @@ class State(object):
     def store(self):
         return (self.trans, self.mu)
 
+    def train(self, trans, mu):
+        try:
+            self.trainTrans = self.trainTrans + trans
+            self.trainMu += mu.prob()
+            self.trainCount += 1
+        except AttributeError:
+            self.trainCount = 1
+            self.trainTrans = trans
+            self.trainMu = mu.prob()
+
+    def update(self):
+        try:
+            if self.trainCount == 0: return
+        except AttributeError:
+            return
+        #print("{0}{1}:\t{2}\t\t{3}".format(self.char, self.name,
+        #    self.trainTrans/NegLog(self.trainCount), self.trainMu/self.trainCount))
+        tf = 0.05
+        # self.trans = NegLog(tf)*self.trainTrans/NegLog(self.trainCount) + NegLog(1-tf)*self.trans
+        tf = 0.5
+        if self.char != " ":
+            self.mu = (tf)*self.trainMu/self.trainCount + (1-tf)*self.mu
+
+        self.trainTrans = NegLog(0)
+        self.trainMu = 0
+        self.trainCount = 0
+
+
 """
 Each state should have a transition probability,
 an emmission probability, and a link to the next
