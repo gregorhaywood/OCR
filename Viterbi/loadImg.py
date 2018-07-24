@@ -10,6 +10,8 @@ import glob
 import sys
 
 
+import csv
+
 
 
 black = [0.0,0.0,0.0,1.0]
@@ -228,8 +230,8 @@ def trainOn(model, path):
         return
 
     results = m.fit(line, counts[start:end])
-    m.expected()
-    m.update()
+    #m.expected()
+    #m.update()
 
     m.store("Results/" + path + ".csv")
 
@@ -284,17 +286,22 @@ fname = "Data/img.png"
 
 # print("done")
 
-import csv
-
+"""
 img = np.array(imread(fname))
 counts = list(map(lambda x: len(img)-x.sum(), img.transpose()))
 start = 0
 while (counts[start] == 0): start = start + 1
 end = len(counts)
 while (counts[end-1] == 0): end = end - 1
-
-m = Model( "r")
-
+"""
+m = Model( "c")
+"""
+# fit for argv
+os.chdir("Training")
+file = sys.argv[1][9:]
+trainOn(m, file)
+sys.exit(0)
+"""
 os.chdir("Training")
 for i in range(1,7):
     print("Page:\t{0}".format(i))
@@ -320,19 +327,6 @@ m.store("codex2")
 storeImg(m,img,"Data/model2.png")
 print("Training 1 Done")
 
-for i in range(stepSize):
-    m.expected()
-    m.update()
-m.store("codex3")
-storeImg(m,img,"Data/model3.png")
-print("Training 2 Done")
-
-for i in range(stepSize):
-    m.expected()
-    m.update()
-m.store("codex4")
-storeImg(m,img,"Data/model4.png")
-
 # TODO - general
 # readability/maintainability/documentation
 #
@@ -341,6 +335,8 @@ storeImg(m,img,"Data/model4.png")
 # random start - done
 # training infrastructure - done
 #
+# consider: training from gt vs transcription
+# ...what it is vs what it looks like
 
 # TODO - avoid min/max
 # random strart codex

@@ -29,10 +29,10 @@ class NegLog(object):
             return NegLog(negLog=(self._val+other._val))
 
     def __truediv__(self,other):
-        if other.isZero():
-            raise ZeroDivisionError()
-        elif self.isZero():
+        if self.isZero():
             return self.clone()
+        elif other.isZero():
+            raise ZeroDivisionError()
         else:
             return NegLog(negLog=(self._val-other._val))
 

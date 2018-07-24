@@ -49,12 +49,10 @@ class State(object):
             if self.trainCount == 0: return
         except AttributeError:
             return
-        #print("{0}{1}:\t{2}\t\t{3}".format(self.char, self.name,
-        #    self.trainTrans/NegLog(self.trainCount), self.trainMu/self.trainCount))
-        tf = 0.05
-        # self.trans = NegLog(tf)*self.trainTrans/NegLog(self.trainCount) + NegLog(1-tf)*self.trans
-        tf = 0.5
         if self.char != " ":
+            tf = 0.05
+            self.trans = NegLog(tf)*self.trainTrans/NegLog(self.trainCount) + NegLog(1-tf)*self.trans
+            tf = 0.1
             self.mu = (tf)*self.trainMu/self.trainCount + (1-tf)*self.mu
 
         self.trainTrans = NegLog(0)

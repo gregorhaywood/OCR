@@ -53,6 +53,10 @@ class Model(object):
         longChar = "MWmnrw❧➽"
 
         rnd = Rnd()
+        def rndTr(): return rnd.randrange(45,65)/100
+        def rndMu(): return rnd.randrange(10,30,5)/10
+
+
         codec = {}
         for c in chars:
             if c == " ":
@@ -60,24 +64,24 @@ class Model(object):
             elif c in longChar:
                 states = []
                 for i in range(6):
-                    tr = 0.5#rnd.randrange(40,60)/100
-                    mu = rnd.randrange(10,30,5)/10
+                    tr = rndTr()
+                    mu = rndMu()
                     states.append((NegLog(tr),mu))
                 states.append((NegLog(0.5),0))
                 codec[c] = Char(c, states)
             elif c in medium:
                 states = []
                 for i in range(4):
-                    tr = rnd.randrange(25,75)/100
-                    mu = rnd.randrange(100,500)/100
+                    tr = rndTr()
+                    mu = rndMu()
                     states.append((NegLog(tr),mu))
                 states.append((NegLog(0.5),0))
                 codec[c] = Char(c, states)
             elif c in short:
                 states = []
                 for i in range(2):
-                    tr = rnd.randrange(25,75)/100
-                    mu = rnd.randrange(100,500)/100
+                    tr = rndTr()
+                    mu = rndMu()
                     states.append((NegLog(tr),mu))
                 states.append((NegLog(0.5),0))
                 codec[c] = Char(c, states)

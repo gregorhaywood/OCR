@@ -24,8 +24,8 @@ class StateList(object):
     def fit(self):
         # fit
         index = 0
-        self.fitted = []
-        for col in self.img:
+        self.fitted = [str(self[0])]
+        for col in self.img[1:]:
             # get state
             current = self[index]
             try:
@@ -54,9 +54,18 @@ class StateList(object):
             colList = []
             start = len(self)-1
             end = start - (len(self.img)-col)-1
-            for state in range(start ,end,-1):
+            for state in range(start, end,-1):
                 if (state < 0):
                     break
+
+                # trim search space
+                if state/len(self) < col/len(self.img)-0.1:
+                    colList.append(NegLog(0))
+                    continue
+                if state/len(self) > col/len(self.img)+0.1:
+                    colList.append(NegLog(0))
+                    continue
+
                 em = self[state].getEmission(self.img[col])
                 change = NegLog(0)
                 # state index may be out of bounds
@@ -89,6 +98,15 @@ class StateList(object):
                     em = self[state].getEmission(self.img[col])
                 except IndexError:
                     continue
+
+                # trim search space
+                if state/len(self) < col/len(self.img)-0.1:
+                    colList.append(NegLog(0))
+                    continue
+                if state/len(self) > col/len(self.img)+0.1:
+                    colList.append(NegLog(0))
+                    continue
+
                 change = NegLog(0)
                 if state > 0:
                     change = forward[col-1][state-1] * self[state-1].getTrans()
