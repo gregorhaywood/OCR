@@ -37,23 +37,28 @@ class State(object):
     def train(self, trans, mu):
         try:
             self.trainTrans = self.trainTrans + trans
-            self.trainMu += mu.prob()
+            self.trainMu += mu#.prob()
             self.trainCount += 1
         except AttributeError:
             self.trainCount = 1
             self.trainTrans = trans
-            self.trainMu = mu.prob()
+            self.trainMu = mu#.prob()
 
     def update(self):
         try:
             if self.trainCount == 0: return
         except AttributeError:
             return
+        tf = 0.01
+        self.trans = NegLog(tf)*self.trainTrans/NegLog(self.trainCount) + NegLog(1-tf)*self.trans
+        # limit domain
+        k = 0.2 # range
+        self.trans = NegLog(0.5*(1-k))+NegLog(k)*self.trans
         if self.char != " ":
-            tf = 0.05
-            self.trans = NegLog(tf)*self.trainTrans/NegLog(self.trainCount) + NegLog(1-tf)*self.trans
             tf = 0.1
             self.mu = (tf)*self.trainMu/self.trainCount + (1-tf)*self.mu
+            if self.mu < 1:
+                self.mu = 1
 
         self.trainTrans = NegLog(0)
         self.trainMu = 0

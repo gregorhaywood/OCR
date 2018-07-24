@@ -8,6 +8,8 @@ from functools import reduce
 from viterbi.negLog import NegLog
 from math import log
 
+SEARCH_SPACE = 0.2
+
 class StateList(object):
 
     def __init__(self, codec, string, img):
@@ -57,14 +59,18 @@ class StateList(object):
             for state in range(start, end,-1):
                 if (state < 0):
                     break
-
+                
                 # trim search space
-                if state/len(self) < col/len(self.img)-0.1:
-                    colList.append(NegLog(0))
+                
+                if state/len(self) < col/len(self.img)-SEARCH_SPACE:
+                    colList.insert(0, NegLog(0))
                     continue
-                if state/len(self) > col/len(self.img)+0.1:
-                    colList.append(NegLog(0))
+                
+                if state/len(self) > col/len(self.img)+SEARCH_SPACE:
+                    colList.insert(0, NegLog(0))
                     continue
+                    
+                
 
                 em = self[state].getEmission(self.img[col])
                 change = NegLog(0)
@@ -100,13 +106,13 @@ class StateList(object):
                     continue
 
                 # trim search space
-                if state/len(self) < col/len(self.img)-0.1:
+                if state/len(self) < col/len(self.img)-SEARCH_SPACE:
                     colList.append(NegLog(0))
                     continue
-                if state/len(self) > col/len(self.img)+0.1:
+                if state/len(self) > col/len(self.img)+SEARCH_SPACE:
                     colList.append(NegLog(0))
                     continue
-
+                
                 change = NegLog(0)
                 if state > 0:
                     change = forward[col-1][state-1] * self[state-1].getTrans()
@@ -163,10 +169,10 @@ class StateList(object):
                 f = forward[col][state]
                 b = backward[col][state]
                 emit = self[state].getEmission(self.img[col])
-                path = f*b/emit
+                path = f*b*emit
                 allPaths = allPaths + path
                 e = e + path*NegLog(log(self.img[col]+1))
-            mu.append(e/allPaths)
+            mu.append((e/allPaths).prob())
 
         trans = []
         for i in range(len(change)-1):

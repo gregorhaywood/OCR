@@ -230,8 +230,9 @@ def trainOn(model, path):
         return
 
     results = m.fit(line, counts[start:end])
-    #m.expected()
-    #m.update()
+    m.expected()
+    m.update()
+    results = m.fit(line, counts[start:end])
 
     m.store("Results/" + path + ".csv")
 
@@ -295,13 +296,17 @@ end = len(counts)
 while (counts[end-1] == 0): end = end - 1
 """
 m = Model( "c")
-"""
+
+
 # fit for argv
+"""
 os.chdir("Training")
 file = sys.argv[1][9:]
+#for i in range(100):
 trainOn(m, file)
 sys.exit(0)
 """
+
 os.chdir("Training")
 for i in range(1,7):
     print("Page:\t{0}".format(i))
