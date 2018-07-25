@@ -23,26 +23,82 @@ class StateList(object):
         for c in self.chars:
             self.states += c.states
 
-    def fit(self):
-        # fit
-        index = 0
-        self.fitted = [str(self[0])]
-        for col in self.img[1:]:
-            # get state
-            current = self[index]
-            try:
-                nextState = self[index  + 1]
-            except IndexError:
-                self.fitted.append(str(current))
-                continue
+    def fit(self):        
+        # FORWARDS 
+        # TODO
+        # clean up - don't need to store anything except previous column
+        
+        forward = []
+        forward.append([(self[0].getEmission(self.img[0]), [0])]
+                    + [(NegLog(0), None)]*(len(self)-1))
+        # other cols
+        for col in range(1,len(self.img)):
+            # state is at most col
+            # there is a lower limit on state as well
+            # TODO 
+            # will garuntee reaching end state 
+            # limit is
+            # len(stateList) - (len(colList)-col)
+            # min 0
+            
+            
+            # remaining columns:
+            remaining = len(self.img)-col-1
+            # there can be a state transition in each col of remaining
+            # so only the last $remaining states can occur
+            firstState = len(self)-remaining-1
+            if firstState < 0:
+                firstState = 0    
+            colList = [(NegLog(0), None)]*firstState
+            for state in range(firstState, col+1):
+                try:
+                    em = self[state].getEmission(self.img[col])
+                except IndexError:
+                    continue
 
-            # store
-            if current.getEmission(col) * current.getStay() > nextState.getEmission(col) * current.getTrans():
-                self.fitted.append(str(current))
-            else:
-                self.fitted.append(str(nextState))
-                index += 1
-        return self.fitted
+                # trim search space
+                if state/len(self) < col/len(self.img)-SEARCH_SPACE:
+                    colList.append((NegLog(0), None))
+                    continue
+                if state/len(self) > col/len(self.img)+SEARCH_SPACE:
+                    colList.append((NegLog(0), None))
+                    continue
+                
+                change = NegLog(0)
+                if state > 0:
+                    change = forward[col-1][state-1][0] * self[state-1].getTrans()
+                same = NegLog(0)
+                # col-1 might not have an entry for state
+                try:
+                    same = forward[col-1][state][0] * self[state-1].getStay()
+                except IndexError:
+                    pass
+                    
+                # maximisation
+                if same>change:
+                    colList.append(((same * em), forward[col-1][state][1]))
+                else:
+                    colList.append(((change * em), forward[col-1][state-1][1] + [col]))
+                    
+            colList = colList + ([(NegLog(0), None)]*(len(self)-len(colList)))
+            forward.append(colList)
+        p, transCols = max(forward[-1], key=lambda x:x[0])
+        
+        # for each transition columns
+        index = -1
+        self.fitted = []
+        
+        for c in range(len(self.img)):
+            try:
+                if c < transCols[index+1]:
+                    self.fitted.append(self[index])
+                else:
+                    index = index + 1
+                    self.fitted.append(self[index])
+            except IndexError:
+                self.fitted.append(self[index])
+        
+        return self.fitted, p
 
     def backwards(self):
         backward = [[]]*len(self.img)
@@ -178,32 +234,14 @@ class StateList(object):
         for i in range(len(change)-1):
             trans.append(change[i]/(change[i]+stay[i]))
 
+        # store updates
         for i in range(len(self)-1):
             self[i].train(trans[i], mu[i])
 
-        # TODO
-        # mu: updated mus, neglog form
-        # update: updated transitions, neglog
-        """
-        Work out appropriate structure for training
-        Handle multiple occurances of a state
-        """
-        return mu
 
     def update(self):
         for s in self.states:
             s.update()
-
-    def train(self):
-        pass
-        # training
-        """
-        fw/bw only need probabilities and order
-
-        training needs to referance states directly in order to update
-        chars need to referance state for saving
-        """
-
 
     def __getitem__(self,key):
         """Get a state by index"""
