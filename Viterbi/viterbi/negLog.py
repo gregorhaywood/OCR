@@ -71,6 +71,9 @@ class NegLog(object):
 
     def __repr__(self):
         return str(self._val)
+        
+    def __format__(self, fmt):
+        return self._val.__format__(fmt)
 
     def clone(self):
         return NegLog(negLog=self._val)

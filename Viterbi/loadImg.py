@@ -60,9 +60,11 @@ def trainOn(model, path):
     while (counts[white-1] == 0): white -= 1
     if buf-white > DIVIDE:
         end = white
-    m.fit(line, counts[start:end], fit=False)
-    m.expected()
-    m.update()
+        
+        
+    #m.fit(line, counts[start:end], fit=False)
+    #m.expected()
+    #m.update()
     results, p = m.fit(line, counts[start:end])
     
     m.store("Results/" + path + ".csv")
@@ -85,6 +87,13 @@ def trainOn(model, path):
         if v == 4:
             return RED
         return None
+        
+    def spaces(col):
+        if str(results[col])[0] ==  " ":
+            return RED 
+        else: 
+            return WHITE
+        
 
     trans = img.transpose()
     output = []
@@ -93,7 +102,7 @@ def trainOn(model, path):
     for col in range(len(results)):
         val = 1-trans[col+start].sum()/len(img)
         output.append(list(map(
-            lambda x: BLACK if isChar(x) else c(col),
+            lambda x: BLACK if isChar(x) else spaces(col),
             trans[col+start])))
 
     for i in range(len(output)):
@@ -107,7 +116,8 @@ def trainOn(model, path):
     fn = "Results/" + path + ".png"
     out = np.array(output).transpose(1,0,2)
     imsave(fn, out, format="png")
-    print("Trained on {0}".format(path))
+    #print("Trained on {0}".format(path))
+    print("{0}:  {1:.2f}".format(path, p))
 
 
 
@@ -125,7 +135,6 @@ if len(sys.argv) > 1:
 else:
     os.chdir("Training")
     for i in range(1,7):
-        print("Page:\t{0}".format(i))
         files = glob.glob("000{0}/0001/*.txt".format(i))
         files.sort()
         for file in files:
