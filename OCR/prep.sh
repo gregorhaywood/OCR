@@ -10,7 +10,13 @@ do
 	I=$(printf '%04d\n' $i)
 	:
 	rm -r ${DATA}/bin/$I
-	ocropus-nlbin -n ${DATA}/scans/scan_$I.tif -o ${DATA}/bin/$I
+	if [ -f ${DATA}/scans/scan_$I.tif ];
+	then 
+		ocropus-nlbin -n ${DATA}/scans/scan_$I.tif -o ${DATA}/bin/$I
+	elif [ -f ${DATA}/scans/scan_$I.png ];
+	then
+		ocropus-nlbin -n ${DATA}/scans/scan_$I.png -o ${DATA}/bin/$I
+	fi
 done
 
 # split images
@@ -19,7 +25,7 @@ do
 	I=$(printf '%04d\n' $i)
 	:
 	rm -r ${DATA}/bin/$I/0001
-	ocropus-gpageseg --maxcolseps 0 ${DATA}/bin/$I/0001.bin.png
+	ocropus-gpageseg -n ${DATA}/bin/$I/0001.bin.png
 done
 
 # split transcriptions

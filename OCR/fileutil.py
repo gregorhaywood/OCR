@@ -1,10 +1,10 @@
-from os import listdir
+from os import listdir, environ
 from os.path import isfile, join
 from re import match, sub
 
 # Paths and filenames.
 
-ocr_data_dir = '../Data/FrenchBible'
+ocr_data_dir = environ['DATA']  #'../Data/FrenchBible'
 
 ### Auxiliary
 

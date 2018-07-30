@@ -15,7 +15,7 @@ from stringutil import file_to_grapheme_set, chars_to_names
 
 # Edit transcriptions of images, each of one line.
 
-page = 3
+page = 1
 
 tk=Tk()
 tk.geometry('1800x800')

@@ -18,6 +18,7 @@ def levenshtein(s1, s2):
 	return prev_row[-1]
 
 # read strings, set to empty if file does not exist
+# this simplifies checks with for lines with no output transcription
 s1 = ''
 s2 = ''
 try:
