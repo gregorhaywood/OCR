@@ -2,7 +2,7 @@
 
 source ./ocropy/ocropus_venv/bin/activate
 # Directory of data.
-export DATA=../Data/Bern
+export DATA=../Data/FrenchBible
 
 # Configuarble parameters
 FIRST=1
