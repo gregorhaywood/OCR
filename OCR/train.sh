@@ -1,6 +1,6 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
-python getcodec.py
+./getcodec.py
 
 source settings.sh
 

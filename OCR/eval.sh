@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
 source settings.sh
 
@@ -31,10 +31,9 @@ for i in ${!GTLINES[@]}; do
 	TOTALSIZE=$(($TOTALSIZE+$FILESIZE-1))
 done
 
-# echo $((10000 * $TOTALDIFF / $TOTALSIZE))
-
+# python 2 mode
+source ./ocropy/ocropus_venv/bin/activate
 ocropus-errs "${GTLINES[@]}"
-
 # ocropus-econf -C2 "${GTLINES[@]}"
-
 # ocropus-econf "${GTLINES[@]}"
+deactivate

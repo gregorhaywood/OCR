@@ -2,12 +2,6 @@
 
 # Gather all characters occurring in transcriptions.
 
-from os import listdir
-from os.path import isfile, join
-from re import match
-import regex
-import unicodedata
-
 from fileutil import ocr_trans_files, ocr_codec_all, ocr_codec_names
 from stringutil import files_to_grapheme_set, chars_to_hexs, chars_to_names
 

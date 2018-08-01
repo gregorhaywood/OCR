@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
 # python 3 venv for normal scripts
 source venv/bin/activate
@@ -16,7 +16,7 @@ export LAST=2
 
 ### Parameters of training.
 
-# How many iterations.
+# How many total iterations.
 NTRAIN=1000
 # Saving intermediate model after how many iterations.
 FTRAIN=1000

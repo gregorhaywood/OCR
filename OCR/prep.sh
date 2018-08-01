@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
 source settings.sh
 
@@ -28,10 +28,15 @@ do
 	:
 	rm -r ${DATA}/bin/$I/0001
 	ocropus-gpageseg -n ${DATA}/bin/$I/0001.bin.png
+	for F in ${DATA}/bin/$I/0001/*.bin.png;
+	do 
+	  touch $(python3 -c '(print("'$F'".split(".bin.png")[0] + ".gt.txt"))');
+	done
 done
 
 # back to python 3 mode
 deactivate
+source venv/bin/activate
 
 # split transcriptions
 for ((i=$FIRST; i<=$LAST; i++))

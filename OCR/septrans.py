@@ -18,11 +18,16 @@ def init_trans(page):
 
 def split_trans(page):
 	"""Make a new file for each transcription line."""
+	# TODO
+	# shuld be a gt for each .bin.png
+	h = ""
 	with open(ocr_trans_file(page)) as f_in:
 		for i, line in enumerate(f_in.readlines(), 1):
 			h = '01' + expand_hex(i)
 			with open(ocr_trans_line_gold(page, h), 'w') as f_out:
 				f_out.write(line)
+				print("Written to {0}".format(ocr_trans_line_gold(page, h)))
+	# add extra blank lines
 
 def main(page):
 	init_trans(page)

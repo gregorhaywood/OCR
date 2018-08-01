@@ -1,16 +1,8 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
 source settings.sh
 
-#FIRST=1
-#LAST=6
-
-#MODEL=model-00001000.pyrnn.gz
-# MODEL=model-00002000.pyrnn.gz
-# MODEL=model-00003000.pyrnn.gz
-# MODEL=model-00004000.pyrnn.gz
-#MODEL=model-00005000.pyrnn.gz
-
+# select lines to transcribe
 LINES=()
 for ((i=$FIRST; i<=$LAST; i++))
 do
@@ -19,4 +11,8 @@ do
     LINES=("${LINES[@]}" "${MORELINES[@]}")
 done
 
+# transcribe lines
+# python 2 mode
+source ./ocropy/ocropus_venv/bin/activate
 ocropus-rpred -m $DATA/models/$MODEL "${LINES[@]}"
+deactivate
