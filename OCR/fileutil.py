@@ -4,7 +4,7 @@ from re import match, sub
 
 # Paths and filenames.
 
-ocr_data_dir = environ['DATA']  #'../Data/FrenchBible'
+ocr_data_dir = environ["DATA"]  
 
 ### Auxiliary
 

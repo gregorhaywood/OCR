@@ -76,3 +76,10 @@ Postprocessing
 which produces a file with transcriptions linked to rectangles.
 
 =========================================================================
+
+Notes:
+
+There is a bug in ocropus-rtrain that intermittently causes it to crash when
+training on large data sets. If training fails, decrease the size of the training
+set.
+

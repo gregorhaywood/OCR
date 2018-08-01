@@ -1,12 +1,18 @@
 #!/bin/bash
 
-source ./ocropy/ocropus_venv/bin/activate
+# python 3 venv for normal scripts
+source venv/bin/activate
+
+
 # Directory of data.
-export DATA=../Data/FrenchBible
+# Exported to make availible in python scripts
+export DATA="../French"
 
 # Configuarble parameters
-FIRST=1
-LAST=1
+# pages to process
+export FIRST=1
+export LAST=2
+
 
 ### Parameters of training.
 

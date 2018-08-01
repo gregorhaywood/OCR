@@ -1,8 +1,9 @@
 #!/bin/bash
 
 source settings.sh
-#FIRST=1
-#LAST=1
+
+# python 2 mode
+source ./ocropy/ocropus_venv/bin/activate
 
 # binarize
 for ((i=$FIRST; i<=$LAST; i++))
@@ -19,6 +20,7 @@ do
 	fi
 done
 
+
 # split images
 for ((i=$FIRST; i<=$LAST; i++))
 do
@@ -27,6 +29,9 @@ do
 	rm -r ${DATA}/bin/$I/0001
 	ocropus-gpageseg -n ${DATA}/bin/$I/0001.bin.png
 done
+
+# back to python 3 mode
+deactivate
 
 # split transcriptions
 for ((i=$FIRST; i<=$LAST; i++))
