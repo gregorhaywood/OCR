@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 
 import os
-from os import environ
+import config
 
 from html.parser import HTMLParser
 from xml.etree import cElementTree as etree
@@ -20,9 +20,6 @@ def main(page):
 		trans_aut = ocr_trans_line_aut(page, h)
 		with open(trans_aut, 'w') as tr:
 			tr.write(h)
-
-	# TODO
-	# Need to use correct venv
 	
 	# python 2 mode
 	os.system('source ./ocropy/ocropus_venv/bin/activate; ocropus-hocr -o ' + hocr_file + ' ' + hocr_bin_file)
@@ -79,8 +76,9 @@ def main(page):
 
 if __name__ == "__main__":
 	"""Run on every page being processed."""
-	first = int(environ["FIRST"])
-	last = int(environ["LAST"])
+	cfg = config.get()
+	first = int(cfg["FIRST"])
+	last = int(cfg["LAST"])
 	for i in range(first, last+1):
 		main(i)
 	

@@ -1,13 +1,13 @@
 #!/usr/bin/env python3
 
 from os.path import join
-from os import environ
 
 from tkinter import *
 
 from PIL import Image, ImageTk
 from PIL.ImageTk import PhotoImage
 
+import config
 from fileutil import ocr_excl, ocr_line_image_files, extract_hex
 from fileutil import ocr_bin_dir, ocr_excl_file, hex_sorted
 
@@ -71,8 +71,9 @@ def main(page):
 	
 if __name__ == "__main__":
 	"""Run on every page being processed."""
-	first = int(environ["FIRST"])
-	last = int(environ["LAST"])
+	cfg = config.get()
+	first = int(cfg["FIRST"])
+	last = int(cfg["LAST"])
 	for i in range(first, last+1):
 		main(i)
 	

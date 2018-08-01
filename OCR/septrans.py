@@ -18,8 +18,6 @@ def init_trans(page):
 
 def split_trans(page):
 	"""Make a new file for each transcription line."""
-	# TODO
-	# shuld be a gt for each .bin.png
 	h = ""
 	with open(ocr_trans_file(page)) as f_in:
 		for i, line in enumerate(f_in.readlines(), 1):

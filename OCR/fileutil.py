@@ -1,10 +1,12 @@
-from os import listdir, environ
+from os import listdir
 from os.path import isfile, join
 from re import match, sub
 
+import config
+
 # Paths and filenames.
 
-ocr_data_dir = environ["DATA"]  
+ocr_data_dir = config.get("DATA")
 
 ### Auxiliary
 
@@ -88,4 +90,4 @@ def ocr_trans_file_new(page_num):
 	return ocr_data_dir + '/trans/trans_' + expand_dec(page_num) + '_new.txt'
 
 def ocr_trans_file_boxed(page_num):
-	return ocr_data_dir + '/trans/trans_' + expand_dec(page_num) + '_boxed.xml'
+	return ocr_data_dir + '/bin/' + expand_dec(page_num) + '/boxed.xml'

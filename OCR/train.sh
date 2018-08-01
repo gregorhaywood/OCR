@@ -5,7 +5,7 @@
 source settings.sh
 
 LINES=()
-for ((i=$FIRST; i<=$LAST; i++))
+for ((i=$FIRST_T; i<=$LAST_T; i++))
 do
 	I=$(printf '%04d\n' $i)
 

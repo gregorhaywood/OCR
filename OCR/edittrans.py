@@ -1,7 +1,6 @@
 #!/usr/bin/env python3
 
 from os import listdir
-from os import environ
 from os.path import isfile, join
 from re import match, sub
 import unicodedata
@@ -10,6 +9,7 @@ from tkinter import *
 from PIL import ImageTk, Image
 from PIL.ImageTk import PhotoImage
 
+import config
 from fileutil import ocr_line_image_files, ocr_excl, extract_hex, ocr_bin_dir
 from fileutil import ocr_trans_line_aut, ocr_trans_line_gold, ocr_trans_file, ocr_codec_all, ocr_codec_ordinaries
 from stringutil import file_to_grapheme_set, chars_to_names
@@ -132,7 +132,8 @@ def main(page):
 	
 if __name__ == "__main__":
 	"""Run on every page being processed."""
-	first = int(environ["FIRST"])
-	last = int(environ["LAST"])
+	cfg = config.get()
+	first = int(cfg["FIRST"])
+	last = int(cfg["LAST"])
 	for i in range(first, last+1):
 		main(i)
