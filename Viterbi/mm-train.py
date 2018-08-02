@@ -52,7 +52,7 @@ if __name__ == "__main__":
     # 1 model filename, optional
     parser.add_argument("-m", "--model", dest="model", action="store",
                         type=str, required=True,
-                        help="A model to train further.")
+                        help="A model to train.")
     # 1 model filename, requierd
     parser.add_argument("-o", dest="out", action="store",
                         type=str, required=True,

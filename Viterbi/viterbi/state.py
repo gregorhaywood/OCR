@@ -51,9 +51,6 @@ class State(object):
             return
         tf = 0.1
         self.trans = NegLog(tf)*self.trainTrans/NegLog(self.trainCount) + NegLog(1-tf)*self.trans
-        # limit domain
-        #k = 0.2 # range
-        #self.trans = NegLog(0.5*(1-k))+NegLog(k)*self.trans
         if self.char != " ":
             tf = 0.1
             self.mu = (tf)*self.trainMu/self.trainCount + (1-tf)*self.mu

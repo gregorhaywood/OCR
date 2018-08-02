@@ -120,7 +120,8 @@ def trainOn(model, path):
 
 
 
-
+# TODO 
+# make this something useful
 
 
 

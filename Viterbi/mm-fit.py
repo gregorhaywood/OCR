@@ -6,78 +6,82 @@ import os
 import viterbi as vb
 
 
-def main(model, files):
-    
-    m = vb.Model("o", model)
-    for imgPath in files:
-        
+def main(model, files):    
+    model = vb.Model("o", model)
+    for imgPath in files:        
         # validate path
         if imgPath[-8:] != ".bin.png":
             print("Invalid Path: {0}".format(imgPath))
             continue
-        path = imgPath[:-8]
-        
-        # open boxed.xml and get the boundries for this section
-        data_dir, hex_fn = os.path.split(path)
-        bin_dir, _ = os.path.split(data_dir)
-        tree = xml.parse(bin_dir + "/boxed.xml")
-        entry = tree.getroot()[int(hex_fn[2:],16)]
-        bounds = entry.attrib
+        path = imgPath[:-8]        
+        fitLine(model, path)
+
+def fitLine(model, path):
     
-        # get trans and img
-        try:
-            with open(path + ".txt") as f:
-                line = f.read()[:-1]      
-                print("Using {0}".format(path + ".txt"))      
-        except FileNotFoundError:
-            with open(path + ".gt.txt") as f:
-                line = f.read()[:-1]
-                print("Using {0}".format(path + ".gt.txt"))
-        if len(line) == 0:
-            outroot = xml.Element('top')
-            outtree = xml.ElementTree(outroot)            
-            outtree.write("{0}.xml".format(path), encoding='UTF-8')
-            continue
-        offset,_, img = vb.openImg(imgPath)
-        
-        # results
-        results, p = m.fit(line, img)
-        
-        ymin = int(bounds["ymin"])
-        ymax = int(bounds["ymax"])
-        # include ignored whitespace at start of line
-        xmin = int(bounds["xmin"]) + offset
-        
-        outroot = xml.Element('top')
-        outtree = xml.ElementTree(outroot)
-        words = line.split(" ")
-        words.reverse()
-        
-        def addWord(first, last):
-            child = xml.SubElement(outroot, 'word')
-            child.text = words.pop()
-            child.set('xmin', str(xmin+first))
-            child.set('ymin', str(ymin))
-            child.set('xmax', str(xmin+last))
-            child.set('ymax', str(ymax))
-        
-        first = 0
-        space = False
-        for col in range(len(results)):
-            if space:
-                if  str(results[col])[0] == " ":
-                    continue
-                else:
-                    space = False
-                    first = col
-            if str(results[col])[0] == " ":
-                addWord(first, col)
-                space = True
-                
-        addWord(first,len(results)-1)
-        
+    outroot = xml.Element('top')
+    outtree = xml.ElementTree(outroot)   
+
+    # get trans and img
+    line = readLine(path)
+    if len(line) == 0:         
         outtree.write("{0}.xml".format(path), encoding='UTF-8')
-         
+        return
+    words = line.split(" ")
+    words.reverse()
+    
+    offset,_, img = vb.openImg(path + ".bin.png")
+    
+    ymin, ymax, xmin = readXML(path)
+    xmin += offset
+    
+    # results
+    results, p = model.fit(line, img)
+    
+    def addWord(first, last):
+        child = xml.SubElement(outroot, 'word')
+        child.text = words.pop()
+        child.set('xmin', str(xmin+first))
+        child.set('ymin', str(ymin))
+        child.set('xmax', str(xmin+last))
+        child.set('ymax', str(ymax))
+    
+    first = 0
+    space = False
+    for col in range(len(results)):
+        if space:
+            if  str(results[col])[0] == " ":
+                continue
+            else:
+                space = False
+                first = col
+        if str(results[col])[0] == " ":
+            addWord(first, col)
+            space = True            
+    addWord(first,len(results)-1)
+    
+    outtree.write("{0}.xml".format(path), encoding='UTF-8')
+        
+        
+def readLine(path): 
+    """Read transcript line"""   
+    try:
+        with open(path + ".txt") as f:
+            print("Using {0}".format(path + ".txt"))      
+            return f.read()[:-1]      
+    except FileNotFoundError:
+        with open(path + ".gt.txt") as f:
+            print("Using {0}".format(path + ".gt.txt")) 
+            return f.read()[:-1]
+            
+
+def readXML(path):
+    """Read bounds from boxed.xml"""
+    data_dir, hex_fn = os.path.split(path)
+    bin_dir, _ = os.path.split(data_dir)
+    tree = xml.parse(bin_dir + "/boxed.xml")
+    entry = tree.getroot()[int(hex_fn[2:],16)]
+    bounds = entry.attrib
+    return int(bounds["ymin"]), int(bounds["ymax"]), int(bounds["xmin"])
     
 if __name__ == "__main__":
     import argparse
