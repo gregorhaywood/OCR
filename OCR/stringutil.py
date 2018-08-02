@@ -1,10 +1,7 @@
-#!/usr/bin/python3
+#!/usr/bin/env python3
 
 # String utilities.
 
-from os import listdir
-from os.path import isfile, join
-from re import match, sub
 import regex
 import unicodedata
 

@@ -1,18 +1,26 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
-source ./ocropy/ocropus_venv/bin/activate
+# python 3 venv for normal scripts
+source venv/bin/activate
+
+
 # Directory of data.
-DATA=../Data/FrenchBible
+# Exported to make availible in python scripts
+DATA=$(./config.py DATA)
 
 # Configuarble parameters
-FIRST=1
-LAST=1
+# pages to process
+FIRST=$(./config.py FIRST)
+LAST=$(./config.py LAST)
+FIRST_T=$(./config.py FIRST)
+LAST_T=$(./config.py LAST)
+
 
 ### Parameters of training.
 
-# How many iterations.
-NTRAIN=1000
+# How many total iterations.
+NTRAIN=$(./config.py NTRAIN)
 # Saving intermediate model after how many iterations.
-FTRAIN=1000
+FTRAIN=$(./config.py FTRAIN)
 
-MODEL=model-00001000.pyrnn.gz
+MODEL=$(./config.py MODEL)

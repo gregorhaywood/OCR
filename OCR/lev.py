@@ -1,4 +1,4 @@
-#!/usr/bin/python3
+#!/usr/bin/env python3
 
 # Minimum edit distance between two files, each consisting of single line.
 
@@ -18,6 +18,7 @@ def levenshtein(s1, s2):
 	return prev_row[-1]
 
 # read strings, set to empty if file does not exist
+# this simplifies checks with for lines with no output transcription
 s1 = ''
 s2 = ''
 try:
