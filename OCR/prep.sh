@@ -30,7 +30,7 @@ do
 	ocropus-gpageseg -n ${DATA}/bin/$I/0001.bin.png
 	for F in ${DATA}/bin/$I/0001/*.bin.png;
 	do 
-	  touch $(python3 -c '(print("'$F'".split(".bin.png")[0] + ".gt.txt"))');
+	  echo > $(python3 -c '(print("'$F'".split(".bin.png")[0] + ".gt.txt"))');
 	done
 done
 

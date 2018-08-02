@@ -35,7 +35,6 @@ do
 	LINES=("${LINES[@]}" "${FINAL[@]}")
 done
 
-
 # python 2 mode
 source ./ocropy/ocropus_venv/bin/activate
 ocropus-rtrain -c $DATA/codecs/all.txt -N $NTRAIN -F $FTRAIN -o $DATA/models/model "${LINES[@]}"

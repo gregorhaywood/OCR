@@ -53,27 +53,15 @@ class Model(object):
             row = [name] + list(reduce(lambda x, y: x+y, data))
             writer.writerow(row)
         file.close()
+        
+    def fit(self, line, img):
+        """Fit the model to the input."""
+        stateList = StateList(self.codec, line, img)
+        return stateList.fit()
 
-    def fit(self, line, img, fit=True):
-        """Get the states for a line transcription"""
-        # TODO
-        # use fname following ocropus convention
-        self.stateList = StateList(self.codec, line, img)
-        self.img = img
-        if fit:
-            return self.stateList.fit()
-        else:
-            return None
+    def train(self, line, img):
+        """Train the model on the input."""
+        stateList = StateList(self.codec, line, img)
+        stateList.train()
 
-    def forwards(self):
-        return self.stateList.forwards()
-
-    def backwards(self):
-        return self.stateList.backwards()
-
-    def expected(self):
-        return self.stateList.expected()
-
-    def update(self):
-        self.stateList.update()
 

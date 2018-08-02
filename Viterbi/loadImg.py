@@ -62,9 +62,9 @@ def trainOn(model, path):
         end = white
         
         
-    #m.fit(line, counts[start:end], fit=False)
-    #m.expected()
-    #m.update()
+    m.fit(line, counts[start:end], fit=False)
+    m.expected()
+    m.update()
     results, p = m.fit(line, counts[start:end])
     
     m.store("Results/" + path + ".csv")
@@ -116,7 +116,6 @@ def trainOn(model, path):
     fn = "Results/" + path + ".png"
     out = np.array(output).transpose(1,0,2)
     imsave(fn, out, format="png")
-    #print("Trained on {0}".format(path))
     print("{0}:  {1:.2f}".format(path, p))
 
 
@@ -139,46 +138,3 @@ else:
         files.sort()
         for file in files:
             trainOn(m, file.split(".")[0])
-
-# TODO - general
-# readability/maintainability/documentation
-#
-
-# TODO
-# MAYBE:
-# setting state number:
-    # merge states that have similar mu
-        # (ie, e1(n)*stay > e2(n)*stay for most reasonabe n
-    # split states that have diverse emission probabilities
-
-
-# TODO enhancments
-# parallel forwards/backwards/training
-# non-binary image version
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-#end

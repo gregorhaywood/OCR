@@ -1,97 +1,100 @@
+#! /usr/bin/env python3
 
+import xml.etree.ElementTree as xml
+import os
 
+import viterbi as vb
 
-
-"""
-
-Should take in a model and list of files to process
-
-Initially, also take an output directory
-
-Do more to fit with ocropus framework
-
-"""
-
-
-
-DIVIDE = 30
 
 def main(model, out, files):
-    m = Model( "o", model)
-    for f in files:
+    
+    m = vb.Model("o", model)
+    for imgPath in files:
+        
+        # validate path
+        if imgPath[-8:] != ".bin.png":
+            print("Invalid Path: {0}".format(imgPath))
+            continue
+        path = imgPath[:-8]
+        
+        # open boxed.xml and get the boundries for this section
+        data_dir, hex_fn = os.path.split(path)
+        bin_dir, _ = os.path.split(data_dir)
+        tree = xml.parse(bin_dir + "/boxed.xml")
+        entry = tree.getroot()[int(hex_fn[2:],16)]
+        bounds = entry.attrib
     
         # get trans and img
+        # TODO change order
         try:
-            with open(path + ".txt") as f:
+            with open(path + ".gt.txt") as f:
                 line = f.read()[:-1]
+                print("Using {0}".format(path + ".gt.txt"))
         except FileNotFoundError:
             with open(path + ".txt") as f:
-                line = f.read()[:-1]            
+                line = f.read()[:-1]      
+                print("Using {0}".format(path + ".txt"))      
         if len(line) == 0:
-            return
-        s, e, img = openImg(file + ".bin.png")
+            outroot = xml.Element('top')
+            outtree = xml.ElementTree(outroot)            
+            outtree.write("{0}.xml".format(path), encoding='UTF-8')
+            continue
+        offset,_, img = vb.openImg(imgPath)
         
         # results
         results, p = m.fit(line, img)
-    
-
-def openImg(path):
-    """
-    Open an image, and return an array of counts of black 
-    pixels in each column. Also trims white space and noise 
-    at then begining and and end of the line.
-    """
-    img = np.array(imread(path))
-    counts = list(map(lambda x: len(img)-x.sum(), img.transpose()))
-    
-    # trim start and end
-    start = 0
-    while (counts[start] == 0): start += 1
-    buf = start
-    while (counts[buf] != 0): buf += 1
-    white = buf
-    while (counts[white] == 0): white += 1
-    if white-buf > DIVIDE:
-        start = white
-
-    end = len(counts)
-    while (counts[end-1] == 0): end -= 1
-    buf = end
-    while (counts[buf-1] != 0): buf -= 1
-    white = buf
-    while (counts[white-1] == 0): white -= 1
-    if buf-white > DIVIDE:
-        end = white
         
+        ymin = int(bounds["ymin"])
+        ymax = int(bounds["ymax"])
+        # include ignored whitespace at start of line
+        xmin = int(bounds["xmin"]) + offset
         
-    return start, end, counts[start:end]
+        outroot = xml.Element('top')
+        outtree = xml.ElementTree(outroot)
+        words = line.split(" ")
+        words.reverse()
+        
+        def addWord(first, last):
+            child = xml.SubElement(outroot, 'word')
+            child.text = words.pop()
+            child.set('xmin', str(xmin+first))
+            child.set('ymin', str(ymin))
+            child.set('xmax', str(xmin+last))
+            child.set('ymax', str(ymax))
+        
+        first = 0
+        space = False
+        for col in range(len(results)):
+            if space:
+                if  str(results[col])[0] == " ":
+                    continue
+                else:
+                    space = False
+                    first = col
+            if str(results[col])[0] == " ":
+                addWord(first, col)
+                space = True
+                
+        addWord(first,len(results)-1)
+        
+        outtree.write("{0}.xml".format(path), encoding='UTF-8')
+         
     
-
-
-
 if __name__ == "__main__":
     import argparse
 
     parser = argparse.ArgumentParser(description="""
-            Use an mm model to find spaces on a transcription line.
-        """)
+            Use an mm model to find spaces on a transcription line. The resulting
+            xml file is saved next to the image.""")
         
     # 1 or more image file names
     parser.add_argument("files", type=str, nargs="+", metavar="FILE",
-                        help="""A file to fit the model to. FILE.bin.png and FILE.txt 
-                        or FILE.gt.txt must both exist""")
+                        help="""A .bin.png file to fit the model to. FILE.bin.png 
+                        and FILE.txt or FILE.gt.txt must both exist""")
     # 1 model filename, requierd
     parser.add_argument("-m", "--model", dest="model", action="store",
                         type=str, required=True,
                         help="Specify the model to use (required)")
-    # 1 optional output directory    
-    parser.add_argument("-o", dest="out", action="store",
-                        type=str, default="./",
-                        help="Output directory (optional)")
 
     args = parser.parse_args()
-    print(args.files)
-    print(args.model)
-    print(args.out)
-    # TODO add args here
-    # main(args.model, arfs.out, args.files)
+    main(args.model, args.out, args.files)

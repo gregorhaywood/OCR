@@ -82,7 +82,7 @@ Use a model to transcribe data.
 Evaluate a model for accuracy based on the results of a transcription.
 
     $ ./postproc.py
-Created boxed.xml files showing positions of image segments.
+Created boxed.xml files showing positions of image segments. Currently this overwrites the transcription, which should be avoided.
 
 ### Also availible
 

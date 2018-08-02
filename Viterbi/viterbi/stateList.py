@@ -23,8 +23,7 @@ class StateList(object):
         for c in self.chars:
             self.states += c.states
 
-    def fit(self):        
-        # FORWARDS 
+    def fit(self): 
         # TODO
         # clean up - don't need to store anything except previous column
         
@@ -100,7 +99,7 @@ class StateList(object):
         
         return self.fitted, p
 
-    def backwards(self):
+    def _backwards(self):
         backward = [[]]*len(self.img)
 
         # col  can only be on state
@@ -145,7 +144,7 @@ class StateList(object):
             backward[col] = colList
         return backward
 
-    def forwards(self):
+    def _forwards(self):
 
         # col  can only be on state
         forward = []
@@ -183,9 +182,9 @@ class StateList(object):
             forward.append(colList)
         return forward
 
-    def expected(self):
-        forward = self.forwards()
-        backward = self.backwards()
+    def train(self):
+        forward = self._forwards()
+        backward = self._backwards()
 
         # updated to state version
         change = []
@@ -234,12 +233,16 @@ class StateList(object):
         for i in range(len(change)-1):
             trans.append(change[i]/(change[i]+stay[i]))
 
+
+        # TODO
+        # this approach is unnecessary and can be consolidated
+        
         # store updates
         for i in range(len(self)-1):
             self[i].train(trans[i], mu[i])
-
-
-    def update(self):
+        
+        # apply changes 
+        # TODO 
         for s in self.states:
             s.update()
 

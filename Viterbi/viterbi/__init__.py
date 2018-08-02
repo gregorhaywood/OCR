@@ -9,8 +9,5 @@ This branch implements a new state list abstration.
 """
 
 __version__ = '0.2 In Development'
-
-from viterbi.state import State
-from viterbi.char import Char
-from viterbi.negLog import NegLog
 from viterbi.model import Model
+from viterbi.util import *
