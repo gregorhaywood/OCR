@@ -36,56 +36,64 @@ following structure:
 <pre>
 $DATA/
 |__scans/
-|   |__
-|   |__
+|   |__scan_{%04d}.{tif,png}  - Images of scaned pages in either format.
+|   |__exclude_{%04d}.txt     - Image segments to ignore, as lines of form 01{%04d}.bin.png. This is |                               produced later in the pipeline, but store here for reruns.
 |__trans/
-|   |__
-|   |__
+|   |__trans_{%04d}.txt   - Training transcriptions for scans in the directory above.
 |__codecs/
-|   |__
-|   |__
-|__bin/
-|   |__
-|   |__
+|   |__ordinaries.txt   - Single keystroke characters, maintained manually
+|   |__all.txt          - Automatically updated codec of all characters in transcription
+|   |__names.txt        - Names of characters in all.txt
+|__bin/ - Output directory is autopopulated
+|   |__{%04d} - Output for a given page
+|       |__0001
+|       |   |__01{%04d}.bin.png   - Binary image segment
+|       |   |__01{%04d}.gt.txt    - Line of transcription from truth data
+|       |   |__01{%04d}.txt       - Generated transcription line
+|       |__{%04d}.bin.png   - Intermediate file from ocropus
+|       |__{%04d}.nrm.png   - Intermediate file from ocropus
+|       |__{%04d}.pseg.png  - Intermediate file from ocropus
+|       |__hocr.html        - Positional data from ocropus
+|       |__boxed.xml        - Image segment positional data
 |__models/
 |   |__model-{%08d}.pyrnn.gz - the outputs of training ocropus
 </pre>
-$DATA/scans
 
-contains:
-* [files of form:] scan_123.tif
-* [files of form:] exclude_123.txt
+In the script directory, config.yaml must be correctly configured. **DATA** should be a path to the structure above. **FIRST** and **LAST** are the page numbers of the first and last pages to process (they do not need to be padded to 4 digits). **FIRST_T** and **LAST_T** are like **FIRST** and **LAST**, except for training. They are different so that some data can be set aside for validation. *A second reason for this is that a bug in ocropus-rtrain causes it to crash if given too large a training set. If Training crashes, try decreasing the size of the training set.* **NTRAIN** is the total number of data items to iterate through while training. **FTRAIN** is the number of iterations between Ocropus saving checkpoints. **MODEL** is the name of the model to use for transcriptions (of those availible in $DATA/models).
 
-Files of form exclude_123.txt contain lines of form 010003.bin.png,
-corresponding to lines automatically extracted from the scan that need
-to be ignored.
+## Pipeline
+    $ ./prep.sh
+This binarizes and segments the scans, and splits the transcriptions into gt.txt files for each line.
 
-$DATA/trans
+    $ ./sellines.py
+Opens a GUI for selecting which image segments contain meaningful text. 
 
-contains:
-* [files of form:] trans_123.txt
+    $ ./edittrans.py
+Correct gt.txt files through a GUI. This is necessary, as prep.sh does not necessarily label gt.txts correctly. This can also be used as an alternative way to supply the transcriptions.
 
-$DATA/codecs
+    $ ./train.sh
+Train models according to config.yaml.
 
-contains:
-* ordinaries.txt
-* all.txt
-* names.txt
+    $ ./test.sh, after adjusting FIRST and LAST, and MODEL
+Use a model to transcribe data.
 
-The file ordinaries.txt is maintained by hand. It contains ordinary
-characters, which correspond to a single key on a normal keyboard.
-The file all.txt may be overwritten automatically, as extracted
-from the transcriptions. The file named.txt is a human readable
-version, with names of glyphs.
+    $ ./eval.sh, after adjusting FIRST and LAST
+Evaluate a model for accuracy based on the results of a transcription.
 
-$DATA/bin
+    $ ./postproc.py
+Created boxed.xml files showing positions of image segments.
 
-contains reproducible files. Must be initialised to contain the directory structure.
+Also availible:
+    $ ./getcodec.py
+And manual inspection of $DATA/codecs/names.txt
+Maintenance of characters in transcriptions.
 
-$DATA/models
+    $ ./subtrans.py firstpage lastpage oldgrapheme newgrapheme
+    $ ./subtrans.py firstpage lastpage oldgrapheme newgrapheme confirm
 
-contains models resulting from training.
+which requires manually inspecting files in $DATA/trans/ .
+The changed files are of the form trans_1234_new.txt , which can
+be compare to files of the form trans_1234.txt . When this is approved,
+the change is made permanent by the second command.
 
-$DATA/backup
 
-may be used for storing backups.
