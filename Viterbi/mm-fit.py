@@ -6,7 +6,7 @@ import os
 import viterbi as vb
 
 
-def main(model, out, files):
+def main(model, files):
     
     m = vb.Model("o", model)
     for imgPath in files:
@@ -25,15 +25,14 @@ def main(model, out, files):
         bounds = entry.attrib
     
         # get trans and img
-        # TODO change order
         try:
-            with open(path + ".gt.txt") as f:
-                line = f.read()[:-1]
-                print("Using {0}".format(path + ".gt.txt"))
-        except FileNotFoundError:
             with open(path + ".txt") as f:
                 line = f.read()[:-1]      
                 print("Using {0}".format(path + ".txt"))      
+        except FileNotFoundError:
+            with open(path + ".gt.txt") as f:
+                line = f.read()[:-1]
+                print("Using {0}".format(path + ".gt.txt"))
         if len(line) == 0:
             outroot = xml.Element('top')
             outtree = xml.ElementTree(outroot)            
@@ -97,4 +96,4 @@ if __name__ == "__main__":
                         help="Specify the model to use (required)")
 
     args = parser.parse_args()
-    main(args.model, args.out, args.files)
+    main(args.model, args.files)

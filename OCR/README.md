@@ -42,7 +42,8 @@ $DATA/
 |__trans/
 |   |__trans_{%04d}.txt   - Training transcriptions for scans in the directory above.
 |__codecs/
-|   |__ordinaries.txt   - Single keystroke characters, maintained manually
+|   |__ordinaries.txt   - Single keystroke characters, maintained manually. Should contain
+|   |                     '~' as ocropy requires it.
 |   |__all.txt          - Automatically updated codec of all characters in transcription
 |   |__names.txt        - Names of characters in all.txt
 |__bin/ - Output directory is autopopulated
