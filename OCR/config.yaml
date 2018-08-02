@@ -1,0 +1,19 @@
+
+# Data directory
+DATA: "../French"
+
+# Pages to process
+FIRST: 1 
+LAST: 6
+# Training data (subset of above)
+FIRST_T: 1 
+LAST_T: 2
+
+# Training iterations
+NTRAIN: 1000
+# Checkpoints for saving new models while training
+FTRAIN: 500
+
+# Model to use for evaluation
+# From those in DATA/models
+MODEL: model-00001000.pyrnn.gz

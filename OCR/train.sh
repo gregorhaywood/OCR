@@ -1,14 +1,11 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
-python getcodec.py
+./getcodec.py
 
 source settings.sh
 
-#FIRST=1
-#LAST=1
-
 LINES=()
-for ((i=$FIRST; i<=$LAST; i++))
+for ((i=$FIRST_T; i<=$LAST_T; i++))
 do
 	I=$(printf '%04d\n' $i)
 
@@ -17,7 +14,7 @@ do
 
   # get files to exclude
   EXCL_LINES=()
-  for EXCL in $(cat $DATA/scans/excl_0001.txt);
+  for EXCL in $(cat $DATA/scans/excl_$I.txt);
   do
     L=$DATA/bin/$I/0001/$EXCL.bin.png
   	EXCL_LINES=("${EXCL_LINES[@]}" "${L}")
@@ -39,4 +36,7 @@ do
 done
 
 
+# python 2 mode
+source ./ocropy/ocropus_venv/bin/activate
 ocropus-rtrain -c $DATA/codecs/all.txt -N $NTRAIN -F $FTRAIN -o $DATA/models/model "${LINES[@]}"
+deactivate 
