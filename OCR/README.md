@@ -37,7 +37,8 @@ following structure:
 $DATA/
 |__scans/
 |   |__scan_{%04d}.{tif,png}  - Images of scaned pages in either format.
-|   |__exclude_{%04d}.txt     - Image segments to ignore, as lines of form 01{%04d}.bin.png. This is |                               produced later in the pipeline, but store here for reruns.
+|   |__exclude_{%04d}.txt     - Image segments to ignore, as lines of form 01{%04d}.bin.png. This
+|                               is produced later in the pipeline, but store here for reruns.
 |__trans/
 |   |__trans_{%04d}.txt   - Training transcriptions for scans in the directory above.
 |__codecs/
@@ -83,7 +84,8 @@ Evaluate a model for accuracy based on the results of a transcription.
     $ ./postproc.py
 Created boxed.xml files showing positions of image segments.
 
-Also availible:
+### Also availible
+
     $ ./getcodec.py
 And manual inspection of $DATA/codecs/names.txt
 Maintenance of characters in transcriptions.
