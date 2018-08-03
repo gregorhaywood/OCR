@@ -1,14 +1,7 @@
-"""This package implements OCR with a Markov model.
-
-The package implements the model, which uses a chain of models
-for each character, as well as algorithms for training and use.
-
-This is an unfinished prototype.
+"""This package uses a Markov model to relate characters from a transcription back
+to their original image.
 """
 
-__version__ = '0.1 In Development'
-
-from viterbi.state import State
-from viterbi.char import Char
-from viterbi.negLog import NegLog
+__version__ = '1.0'
 from viterbi.model import Model
+from viterbi.util import *

@@ -29,10 +29,10 @@ class NegLog(object):
             return NegLog(negLog=(self._val+other._val))
 
     def __truediv__(self,other):
-        if other.isZero():
-            raise ZeroDivisionError()
-        elif self.isZero():
+        if self.isZero():
             return self.clone()
+        elif other.isZero():
+            raise ZeroDivisionError()
         else:
             return NegLog(negLog=(self._val-other._val))
 
@@ -71,6 +71,9 @@ class NegLog(object):
 
     def __repr__(self):
         return str(self._val)
+        
+    def __format__(self, fmt):
+        return self._val.__format__(fmt)
 
     def clone(self):
         return NegLog(negLog=self._val)

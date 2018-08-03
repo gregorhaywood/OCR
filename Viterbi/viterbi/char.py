@@ -10,33 +10,18 @@ class Char(object):
 
     def __init__(self, name, states):
         self.name = name
-        self.states = list(states)
+        self.states = []
+        for i in range(len(states)):
+            t,m = states[i]
+            self.states.append(State(self.name, i, t, m))
 
-    def _fit(self, cols):
-        """Fit the states to an input."""
-        # assume first col is first state
-        results = [self.state.name]
-        for x in cols[1:]:
-            self.state = self.state.getNext(x)
-            results.append(self.state.name)
-        return results
+    def __getitem__(self,key):
+        return self.states[key]
 
-    def getStates(self, previous):
-        """Add a copy of the states to the list."""
-        stateMap = map(lambda x:x,self.states)
-        index = 0
-        if previous.next:
-            t,m = next(stateMap)
-            previous.next = State(self.name, index, t, m, None)
-            previous = previous.next
-            start = 1
-            index = index + 1
-        for t, m in stateMap:
-            previous.next = State(self.name, index, t, m, None)
-            previous = previous.next
-            index = index + 1
-        return previous
+    def __len__(self):
+        return len(self.states)
 
     def store(self):
         """Get all data to store character."""
-        return self.name, self.states #list(map(lambda x,y: [x,y], self.states))
+        states = list(map(lambda x: x.store(), self.states))
+        return self.name, states

@@ -4,8 +4,7 @@ import os
 import config
 
 from html.parser import HTMLParser
-from xml.etree import cElementTree as etree
-import urllib.request as urllib2
+from xml.etree import ElementTree as etree
 
 from fileutil import ocr_bin_page_image, ocr_hocr_file, ocr_line_image_files
 from fileutil import ocr_trans_line_aut, extract_hex, ocr_trans_line_gold, ocr_trans_file_boxed
@@ -13,7 +12,7 @@ from fileutil import ocr_trans_line_aut, extract_hex, ocr_trans_line_gold, ocr_t
 def main(page):
 	hocr_bin_file = ocr_bin_page_image(page)
 	hocr_file = ocr_hocr_file(page)
-
+	
 	fs = ocr_line_image_files(page)
 	for f in fs:
 		h = extract_hex(f)
