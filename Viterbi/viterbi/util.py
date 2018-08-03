@@ -1,7 +1,7 @@
 
 
 
-from matplotlib.image import imread
+from matplotlib.image import imread, imsave
 import numpy as np
 
 
@@ -10,6 +10,15 @@ from viterbi.negLog import NegLog
 
 
 _DIVIDE = 30
+_BLACK = [0.0,0.0,0.0,1.0]
+_WHITE = [1.0,1.0,1.0,1.0]
+_RED = [1.0,0.0,0.0,1.0]
+_GREEN = [0.0,1.0,0.0,1.0]
+_BLUE = [0.0,0.0,1.0,1.0]
+_CYAN = [0.0,1.0,1.0,1.0]
+_MAGENTA = [1.0,0.0,1.0,1.0]
+_YELLOW = [1.0,1.0,0.0,1.0]
+
 def openImg(path):
     """
     Open an image, and return an array of counts of black 
@@ -40,6 +49,61 @@ def openImg(path):
         
     return start, end, counts[start:end]
     
+
+def saveImg(states, start, imgPath, path, allColours=False):
+    """Store img at path coloured according to states"""
+    def colour(pixel, col):
+        if pixel == 0:
+            return _BLACK
+        elif allColours:
+            if str(states[col])[0] ==  " ":
+                return _WHITE
+            v = int(str(states[col])[1])
+            if v == 0:
+                return _MAGENTA
+            v = v%5
+            if v == 0:
+                return _CYAN
+            if v == 1:
+                return _GREEN
+            if v == 2:
+                return _BLUE
+            if v == 3:
+                return _YELLOW
+            if v == 4:
+                return _RED
+        else:
+            if str(states[col])[0] ==  " ":
+                return _RED 
+            else: 
+                return _WHITE
+    
+    img = np.array(imread(imgPath))
+    counts = list(map(lambda x: len(img)-x.sum(), img.transpose()))
+    
+    # trim start
+    start = 0
+    while (counts[start] == 0): start += 1
+    buf = start
+    while (counts[buf] != 0): buf += 1
+    white = buf
+    while (counts[white] == 0): white += 1
+    if white-buf > _DIVIDE:
+        start = white
+
+    trans = img.transpose()
+    
+    output = [[_WHITE]*len(img)] * start
+    for col in range(len(states)):
+        output.append(list(
+                map(lambda x: colour(x, col),
+                    trans[col+start])
+            ))
+            
+    out = np.array(output).transpose(1,0,2)
+    imsave(path, out, format="png")
+
+
 
 def printCodec(fname):
     with open(fname, "r") as file:

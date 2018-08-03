@@ -7,7 +7,6 @@ import viterbi as vb
 
 
 def main(model, files):    
-    model = vb.Model("o", model)
     for imgPath in files:        
         # validate path
         if imgPath[-8:] != ".bin.png":
@@ -100,4 +99,5 @@ if __name__ == "__main__":
                         help="Specify the model to use (required)")
 
     args = parser.parse_args()
-    main(args.model, args.files)
+    model = vb.Model("o", args.model)
+    main(model, args.files)

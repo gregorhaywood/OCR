@@ -2,7 +2,7 @@
 These scripts use the Viterbi algorithm to find spaces in images. Tests have yielded good results against truth transcripts.
 
 ## Scripts
-All scripts contain their own help menus (via -h). Models are stored as csv files.
+All scripts contain their own help menus (via -h). Models are stored as csv files. The heavy lifting is performed by the viterbi module, the requirements of which are given in viterbi/requirements.txt.
 
     $ ./mm-train.py [-h] -m MODEL -o OUT FILE [FILE ...]
 Train an existing MODEL on FILE(s), storing the results in DIR.
@@ -12,6 +12,9 @@ Fit a model to a number of input files.
 
     $ ./mm-view.py [-h] CODEC
 View a codec csv in a human readable form.
+
+    $ ./mm-colour.py [-h] -m MODEL -o OUT [-c] FILE [FILE ...]
+Create a new image showing where state boundaries lie. This can be used to visualise spaces, or manually examine how states are assigned. 
 
 ## Codec Creation
 Codec creation is difficult to automate. A line is needed for each character, and is of the form:
